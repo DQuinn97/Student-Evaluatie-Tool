@@ -1,13 +1,17 @@
 import "./App.css";
 import Navbar from "./components/Navbar";
-import { ThemeProvider } from "./components/theme-provider";
+import { Routes, Route } from "react-router";
+import { Toaster } from "./components/ui/sonner";
+import Register from "./components/Register";
 
 function App() {
   return (
     <>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <Navbar />
-      </ThemeProvider>
+      <Navbar />
+      <Routes>
+        <Route path="/register" element={<Register />} />
+      </Routes>
+      <Toaster />
     </>
   );
 }
