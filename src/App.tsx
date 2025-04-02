@@ -8,6 +8,7 @@ import ResetPass from "./components/ResetPass";
 import Profile from "./components/Profile";
 import StudentStagedagboekIngave from "./components/StudentStagedagboekIngave";
 import StudentDashboard from "./components/StudentDashboard";
+import StudentTaken from "./components/StudentTaken";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           element={<StudentStagedagboekIngave />}
         />
         <Route path="/student/dashboard" element={<StudentDashboard />} />
+        <Route path="/student/taken" element={<StudentTaken />} />
       </Routes>
       <Toaster />
     </>
