@@ -6,6 +6,7 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import ResetPass from "./components/ResetPass";
 import Profile from "./components/Profile";
+import StudentStagedagboekIngave from "./components/StudentStagedagboekIngave";
 
 function App() {
   return (
@@ -16,6 +17,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPass />} />
         <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/student/stagedagboek/ingave"
+          element={<StudentStagedagboekIngave />}
+        />
       </Routes>
       <Toaster />
     </>

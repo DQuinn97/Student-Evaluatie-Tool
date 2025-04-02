@@ -41,7 +41,7 @@ const Login = () => {
     <div className="flex h-screen flex-col items-center justify-center">
       <div className="text-2xl font-bold">Login</div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="m-4 space-y-8">
           <FormField
             control={form.control}
             name="email"
@@ -74,13 +74,19 @@ const Login = () => {
           <Button type="submit" className="w-full">
             Login
           </Button>
-          <div className="text-muted-foreground text-sm">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-blue-500">
-              Register
-            </Link>
-          </div>
         </form>
+        <div className="text-muted-foreground text-sm">
+          Don't have an account?{" "}
+          <Link to="/register" className="text-blue-500">
+            Register
+          </Link>
+        </div>
+        <div className="text-muted-foreground text-sm">
+          Forgot password?{" "}
+          <Link to="/reset-password" className="text-blue-500">
+            Reset
+          </Link>
+        </div>
       </Form>
     </div>
   );
