@@ -7,6 +7,7 @@ import Login from "./components/Login";
 import ResetPass from "./components/ResetPass";
 import Profile from "./components/Profile";
 import StudentStagedagboekIngave from "./components/StudentStagedagboekIngave";
+import StudentDashboard from "./components/StudentDashboard";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           path="/student/stagedagboek/ingave"
           element={<StudentStagedagboekIngave />}
         />
+        <Route path="/student/dashboard" element={<StudentDashboard />} />
       </Routes>
       <Toaster />
     </>
