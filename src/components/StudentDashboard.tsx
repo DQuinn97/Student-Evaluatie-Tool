@@ -37,6 +37,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Bezig",
       feedback: "",
+      ingeleverd: false,
     },
     {
       lecture: "React Hooks",
@@ -47,6 +48,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Bezig",
       feedback: "",
+      ingeleverd: false,
     },
     {
       lecture: "React Router",
@@ -57,6 +59,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Bezig",
       feedback: "",
+      ingeleverd: false,
     },
     {
       lecture: "React State Management",
@@ -67,6 +70,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Bezig",
       feedback: "",
+      ingeleverd: true,
     },
     {
       lecture: "React Context API",
@@ -77,6 +81,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Done",
       feedback: "Goed gedaan, John!",
+      ingeleverd: true,
     },
     {
       lecture: "React Query",
@@ -87,6 +92,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Bezig",
       feedback: "",
+      ingeleverd: false,
     },
     {
       lecture: "React Server Components",
@@ -97,6 +103,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Bezig",
       feedback: "",
+      ingeleverd: false,
     },
     {
       lecture: "React Testing Library",
@@ -107,6 +114,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Bezig",
       feedback: "",
+      ingeleverd: false,
     },
     {
       lecture: "React Internationalization",
@@ -117,6 +125,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Done",
       feedback: "Goed gedaan, John!",
+      ingeleverd: true,
     },
     {
       lecture: "React i18n",
@@ -127,6 +136,7 @@ const student = {
       deadline: "2023-01-01",
       status: "Bezig",
       feedback: "",
+      ingeleverd: false,
     },
   ],
 };
@@ -204,7 +214,7 @@ const StudentDashboard = () => {
             <ClipboardCheck />
             <CardTitle>Ingeleverde taken</CardTitle>
             <CardDescription className="text-center">
-              {student.tasks.filter((task) => task.gottenPoints > 0).length} /{" "}
+              {student.tasks.filter((task) => task.ingeleverd).length} /{" "}
               {student.tasks.length}
             </CardDescription>
           </CardHeader>
