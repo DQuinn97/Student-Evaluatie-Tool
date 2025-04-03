@@ -24,7 +24,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { Student } from "../types";
 import { mockStudents } from "@/data/mockStudents";
 
 // Dashboard components
@@ -33,88 +32,14 @@ import { TasksTable } from "./dashboard/TasksTable";
 import { FilterSection } from "./dashboard/FilterSection";
 import { PerformanceChart } from "./dashboard/PerformanceChart";
 
-const students: Student[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    tasks: [
-      ...Array.from({ length: 50 }).map(() => ({
-        id: Math.floor(Math.random() * 10000000000),
-        lecture: `${
-          [
-            "Introduction to Programming",
-            "Advanced Topics in Programming",
-            "Final Project in Programming",
-            "Exam in Programming",
-            "Assignment in Programming",
-            "Quiz in Programming",
-            "Presentation in Programming",
-            "Research Paper in Programming",
-          ][Math.floor(Math.random() * 7)]
-        }`,
-        klas: ["React", "Angular", "Vue", "Svelte"][
-          Math.floor(Math.random() * 4)
-        ],
-        type: ["taak", "toets"][Math.floor(Math.random() * 2)],
-        deadline: new Date(
-          Date.now() + Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 365),
-        )
-          .toISOString()
-          .split("T")[0],
-        status: ["Bezig", "Te laat", "Ingeleverd"][
-          Math.floor(Math.random() * 3)
-        ],
-        gottenPoints: Math.floor(Math.random() * 20),
-        totalPoints: Math.max(
-          Math.floor(Math.random() * 20),
-          Math.floor(Math.random() * 20),
-        ),
-        feedback: Math.random() > 0.5 ? "Goed gedaan, John!" : "",
-      })),
-    ],
-  },
-  {
-    id: 2,
-    name: "Jane Doe",
-    tasks: [
-      ...Array.from({ length: 50 }).map(() => ({
-        id: Math.floor(Math.random() * 10000000000),
-        lecture: `Lecture ${Math.floor(Math.random() * 1000)}`,
-        klas: ["React", "Angular", "Vue", "Svelte"][
-          Math.floor(Math.random() * 4)
-        ],
-        type: ["taak", "toets"][Math.floor(Math.random() * 2)],
-        deadline: new Date(
-          Date.now() + Math.floor(Math.random() * 10000000000),
-        ).toLocaleDateString("nl-NL", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-        status: ["Bezig", "Te laat", "Ingeleverd"][
-          Math.floor(Math.random() * 3)
-        ],
-        gottenPoints: Math.floor(
-          Math.random() * (Math.floor(Math.random() * 20) + 1),
-        ),
-        totalPoints: Math.floor(Math.random() * 20) + 1,
-        feedback: Math.random() > 0.5 ? "Goed gedaan, Jane!" : "",
-      })),
-    ],
-  },
-];
-
-// console.log(students[0].tasks[0]);
-// console.log(students[1].tasks[0]);
-
 // Update chartData mapping to include totalPoints
-const chartData = students[0].tasks
+const chartData = mockStudents[0].tasks
   .sort(
     (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
   )
   .map((task) => ({
     id: task.id,
-    name: task.lecture, // This should match the accessorKey in columns
+    name: task.lecture,
     points: task.gottenPoints,
     totalPoints: task.totalPoints,
     type: task.type,
@@ -145,10 +70,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-// Update the score column definition
 const columns: ColumnDef<(typeof chartData)[number]>[] = [
   {
-    accessorKey: "name", // This matches the chartData mapping
+    accessorKey: "name",
     header: "Taken",
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
     enableSorting: true,
@@ -206,7 +130,7 @@ const columns: ColumnDef<(typeof chartData)[number]>[] = [
     sortDescFirst: false,
   },
   {
-    accessorKey: "points", // Changed from gottenPoints to points
+    accessorKey: "points",
     header: "Score",
     cell: ({ row }) => (
       <div>{`${row.getValue("points")} / ${row.original.totalPoints}`}</div>
@@ -220,10 +144,9 @@ const columns: ColumnDef<(typeof chartData)[number]>[] = [
     enableSorting: false,
   },
   {
-    // Update the actions column to use the correct id accessor
     id: "actions",
     cell: ({ row }) => {
-      const taskId = row.original.id; // Use the correct id field
+      const taskId = row.original.id;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -234,7 +157,7 @@ const columns: ColumnDef<(typeof chartData)[number]>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acties</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <Link to={`/student/tasks/${taskId}`} className="block w-full">
+              <Link to={`/student/taken/${taskId}`} className="block w-full">
                 Bekijk in detail
               </Link>
             </DropdownMenuItem>
@@ -292,7 +215,7 @@ const StudentDashboard = () => {
   });
 
   const table = useReactTable({
-    data: chartData, // Use chartData instead of students[0].tasks
+    data: chartData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

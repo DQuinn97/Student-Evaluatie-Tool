@@ -9,6 +9,7 @@ import Profile from "./components/Profile";
 import StudentStagedagboekIngave from "./components/StudentStagedagboekIngave";
 import StudentDashboard from "./components/StudentDashboard";
 import StudentTaken from "./components/StudentTaken";
+import { TaskDetail } from "./components/TaskDetail";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         />
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/student/taken" element={<StudentTaken />} />
+        <Route path="/student/taken/:id" element={<TaskDetail />} />
       </Routes>
       <Toaster />
     </>
