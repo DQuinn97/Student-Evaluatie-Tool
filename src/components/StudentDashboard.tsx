@@ -1,266 +1,350 @@
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { ChartConfig } from "@/components/ui/chart";
 import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "./ui/card";
-import { ClipboardCheck, TrendingUp, UsersRound } from "lucide-react";
+  ColumnDef,
+  ColumnFiltersState,
+  PaginationState,
+  SortingState,
+  VisibilityState,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { Ellipsis } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./ui/table";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const student = {
-  id: 1,
-  name: "John Doe",
-  tasks: [
-    {
-      lecture: "Introduction to React",
-      gottenPoints: 10,
-      totalPoints: 10,
-      klas: "React",
-      type: "taak",
-      deadline: "2023-01-01",
-      status: "Bezig",
-      feedback: "",
-      ingeleverd: false,
-    },
-    {
-      lecture: "React Hooks",
-      gottenPoints: 8,
-      totalPoints: 10,
-      klas: "React",
-      type: "taak",
-      deadline: "2023-01-01",
-      status: "Bezig",
-      feedback: "",
-      ingeleverd: false,
-    },
-    {
-      lecture: "React Router",
-      gottenPoints: 12,
-      totalPoints: 15,
-      klas: "React",
-      type: "toets",
-      deadline: "2023-01-01",
-      status: "Bezig",
-      feedback: "",
-      ingeleverd: false,
-    },
-    {
-      lecture: "React State Management",
-      gottenPoints: 9,
-      totalPoints: 10,
-      klas: "React",
-      type: "taak",
-      deadline: "2023-01-01",
-      status: "Bezig",
-      feedback: "",
-      ingeleverd: true,
-    },
-    {
-      lecture: "React Context API",
-      gottenPoints: 11,
-      totalPoints: 15,
-      klas: "React",
-      type: "taak",
-      deadline: "2023-01-01",
-      status: "Done",
-      feedback: "Goed gedaan, John!",
-      ingeleverd: true,
-    },
-    {
-      lecture: "React Query",
-      gottenPoints: 10,
-      totalPoints: 10,
-      klas: "React",
-      type: "taak",
-      deadline: "2023-01-01",
-      status: "Bezig",
-      feedback: "",
-      ingeleverd: false,
-    },
-    {
-      lecture: "React Server Components",
-      gottenPoints: 12,
-      totalPoints: 15,
-      klas: "React",
-      type: "toets",
-      deadline: "2023-01-01",
-      status: "Bezig",
-      feedback: "",
-      ingeleverd: false,
-    },
-    {
-      lecture: "React Testing Library",
-      gottenPoints: 9,
-      totalPoints: 10,
-      klas: "React",
-      type: "taak",
-      deadline: "2023-01-01",
-      status: "Bezig",
-      feedback: "",
-      ingeleverd: false,
-    },
-    {
-      lecture: "React Internationalization",
-      gottenPoints: 11,
-      totalPoints: 15,
-      klas: "React",
-      type: "taak",
-      deadline: "2023-01-01",
-      status: "Done",
-      feedback: "Goed gedaan, John!",
-      ingeleverd: true,
-    },
-    {
-      lecture: "React i18n",
-      gottenPoints: 10,
-      totalPoints: 10,
-      klas: "React",
-      type: "taak",
-      deadline: "2023-01-01",
-      status: "Bezig",
-      feedback: "",
-      ingeleverd: false,
-    },
-  ],
-};
+import { Student } from "../types";
+import { mockStudents } from "@/data/mockStudents";
 
-const chartData = student.tasks
-  .slice(-5)
-  .map((task) => ({ name: task.lecture, points: task.gottenPoints }));
+// Dashboard components
+import { DashboardCards } from "./dashboard/DashboardCards";
+import { TasksTable } from "./dashboard/TasksTable";
+import { FilterSection } from "./dashboard/FilterSection";
+import { PerformanceChart } from "./dashboard/PerformanceChart";
+
+const students: Student[] = [
+  {
+    id: 1,
+    name: "John Doe",
+    tasks: [
+      ...Array.from({ length: 50 }).map(() => ({
+        id: Math.floor(Math.random() * 10000000000),
+        lecture: `${
+          [
+            "Introduction to Programming",
+            "Advanced Topics in Programming",
+            "Final Project in Programming",
+            "Exam in Programming",
+            "Assignment in Programming",
+            "Quiz in Programming",
+            "Presentation in Programming",
+            "Research Paper in Programming",
+          ][Math.floor(Math.random() * 7)]
+        }`,
+        klas: ["React", "Angular", "Vue", "Svelte"][
+          Math.floor(Math.random() * 4)
+        ],
+        type: ["taak", "toets"][Math.floor(Math.random() * 2)],
+        deadline: new Date(
+          Date.now() + Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 365),
+        )
+          .toISOString()
+          .split("T")[0],
+        status: ["Bezig", "Te laat", "Ingeleverd"][
+          Math.floor(Math.random() * 3)
+        ],
+        gottenPoints: Math.floor(Math.random() * 20),
+        totalPoints: Math.max(
+          Math.floor(Math.random() * 20),
+          Math.floor(Math.random() * 20),
+        ),
+        feedback: Math.random() > 0.5 ? "Goed gedaan, John!" : "",
+      })),
+    ],
+  },
+  {
+    id: 2,
+    name: "Jane Doe",
+    tasks: [
+      ...Array.from({ length: 50 }).map(() => ({
+        id: Math.floor(Math.random() * 10000000000),
+        lecture: `Lecture ${Math.floor(Math.random() * 1000)}`,
+        klas: ["React", "Angular", "Vue", "Svelte"][
+          Math.floor(Math.random() * 4)
+        ],
+        type: ["taak", "toets"][Math.floor(Math.random() * 2)],
+        deadline: new Date(
+          Date.now() + Math.floor(Math.random() * 10000000000),
+        ).toLocaleDateString("nl-NL", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        status: ["Bezig", "Te laat", "Ingeleverd"][
+          Math.floor(Math.random() * 3)
+        ],
+        gottenPoints: Math.floor(
+          Math.random() * (Math.floor(Math.random() * 20) + 1),
+        ),
+        totalPoints: Math.floor(Math.random() * 20) + 1,
+        feedback: Math.random() > 0.5 ? "Goed gedaan, Jane!" : "",
+      })),
+    ],
+  },
+];
+
+// console.log(students[0].tasks[0]);
+// console.log(students[1].tasks[0]);
+
+// Update chartData mapping to include totalPoints
+const chartData = students[0].tasks
+  .sort(
+    (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
+  )
+  .map((task) => ({
+    id: task.id,
+    name: task.lecture, // This should match the accessorKey in columns
+    points: task.gottenPoints,
+    totalPoints: task.totalPoints,
+    type: task.type,
+    klas: task.klas,
+    deadline: task.deadline,
+    status: task.status,
+    feedback: task.feedback,
+  }));
 
 const chartConfig = {
-  points: {
-    label: "Points",
-    color: "#cc0000",
-  },
   name: {
-    label: "Lecture",
-    color: "#cc0000",
+    label: "Naam",
+  },
+  points: {
+    label: "Punten",
+  },
+  klas: {
+    label: "Klas",
+  },
+  deadline: {
+    label: "Deadline",
+  },
+  status: {
+    label: "Status",
+  },
+  feedback: {
+    label: "Feedback",
   },
 } satisfies ChartConfig;
 
+// Update the score column definition
+const columns: ColumnDef<(typeof chartData)[number]>[] = [
+  {
+    accessorKey: "name", // This matches the chartData mapping
+    header: "Taken",
+    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    enableSorting: true,
+  },
+  {
+    accessorKey: "klas",
+    header: "Klas",
+    cell: ({ row }) => <div>{row.getValue("klas")}</div>,
+    enableSorting: true,
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => <div>{row.getValue("type")}</div>,
+    enableSorting: true,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => (
+      <Badge
+        variant={
+          row.getValue("status") === "Ingeleverd"
+            ? "success"
+            : row.getValue("status") === "Te laat"
+              ? "destructive"
+              : "default"
+        }
+      >
+        {row.getValue("status")}
+      </Badge>
+    ),
+    enableSorting: true,
+  },
+  {
+    accessorKey: "deadline",
+    header: "Deadline",
+    cell: ({ row }) => {
+      try {
+        const date = new Date(row.getValue("deadline"));
+        return (
+          <div>
+            {new Intl.DateTimeFormat("nl-NL", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }).format(date)}
+          </div>
+        );
+      } catch (e) {
+        return <div>{row.getValue("deadline")}</div>;
+      }
+    },
+    enableSorting: true,
+    sortDescFirst: false,
+  },
+  {
+    accessorKey: "points", // Changed from gottenPoints to points
+    header: "Score",
+    cell: ({ row }) => (
+      <div>{`${row.getValue("points")} / ${row.original.totalPoints}`}</div>
+    ),
+    enableSorting: true,
+  },
+  {
+    accessorKey: "feedback",
+    header: "Feedback",
+    cell: ({ row }) => <div>{row.getValue("feedback")}</div>,
+    enableSorting: false,
+  },
+  {
+    // Update the actions column to use the correct id accessor
+    id: "actions",
+    cell: ({ row }) => {
+      const taskId = row.original.id; // Use the correct id field
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <Ellipsis className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Acties</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link to={`/student/tasks/${taskId}`} className="block w-full">
+                Bekijk in detail
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
+];
+
 const StudentDashboard = () => {
-  const average =
-    student.tasks.reduce((acc, curr) => acc + curr.gottenPoints, 0) /
-    student.tasks.length;
+  const [klas, setKlas] = useState<string | null>("alle");
+  const [type, setType] = useState<string | null>("alle");
+  const currentStudent = mockStudents[0];
+
+  const personalAverage = useMemo(
+    () =>
+      currentStudent.tasks.length > 0
+        ? currentStudent.tasks.reduce(
+            (acc, curr) => acc + curr.gottenPoints,
+            0,
+          ) / currentStudent.tasks.length
+        : 0,
+    [currentStudent.tasks],
+  );
+
+  const { classAverage, averageTotalPoints } = useMemo(
+    () => ({
+      classAverage:
+        mockStudents.length > 0
+          ? mockStudents
+              .flatMap((student) => student.tasks)
+              .reduce((acc, curr) => acc + curr.gottenPoints, 0) /
+            mockStudents.flatMap((student) => student.tasks).length
+          : 0,
+      averageTotalPoints:
+        mockStudents.length > 0
+          ? mockStudents
+              .flatMap((student) => student.tasks)
+              .reduce((acc, curr) => acc + curr.totalPoints, 0) /
+            mockStudents.flatMap((student) => student.tasks).length
+          : 0,
+    }),
+    [],
+  );
+
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "deadline", desc: false },
+  ]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 5,
+  });
+
+  const table = useReactTable({
+    data: chartData, // Use chartData instead of students[0].tasks
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      pagination,
+    },
+  });
 
   return (
     <div>
-      <h1 className="ml-4 text-4xl font-bold">{student.name}'s Dashboard</h1>
-      <ChartContainer config={chartConfig} className="max-h-75 w-full p-4">
-        <LineChart accessibilityLayer data={chartData}>
-          <CartesianGrid vertical={false} />
-          <XAxis
-            dataKey="name"
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            tickFormatter={(value) => value}
-          />
-          <YAxis hide={false} />
-          <ChartTooltip content={<ChartTooltipContent />} />
-          <Line
-            dataKey="points"
-            type="linear"
-            stroke="#17a2b8"
-            strokeWidth={2}
-            dot={false}
-          />
-        </LineChart>
-      </ChartContainer>
-      <div className="my-10 flex gap-4 px-6">
-        <Card className="w-full">
-          <CardHeader className="flex flex-col gap-4">
-            <TrendingUp />
-            <CardTitle>Jouw gemiddelde</CardTitle>
-            <CardDescription className="text-center">
-              {average.toFixed(1)}%
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button>
-              <Link to="/student/punten">Punten bekijken</Link>
-            </Button>
-          </CardContent>
-        </Card>
-        <Card className="w-full">
-          <CardHeader className="flex flex-col gap-4">
-            <UsersRound />
-            <CardTitle>Klas gemiddelde</CardTitle>
-            <CardDescription className="text-center">
-              {average.toFixed(1)}%
-            </CardDescription>
-          </CardHeader>
-        </Card>
-        <Card className="w-full">
-          <CardHeader className="flex flex-col gap-4">
-            <ClipboardCheck />
-            <CardTitle>Ingeleverde taken</CardTitle>
-            <CardDescription className="text-center">
-              {student.tasks.filter((task) => task.ingeleverd).length} /{" "}
-              {student.tasks.length}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button>
-              <Link to="/student/taken">Bekijk taken</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <h1 className="ml-4 text-4xl font-bold">
+        {currentStudent.name.split(" ")[0]}'s Dashboard
+      </h1>
+      <DashboardCards
+        personalAverage={personalAverage}
+        classAverage={classAverage}
+        averageTotalPoints={averageTotalPoints}
+        completedTasks={
+          currentStudent.tasks.filter((task) => task.status === "Ingeleverd")
+            .length
+        }
+        totalTasks={currentStudent.tasks.length}
+      />
+
       <div className="mx-10">
-        <div className="flex justify-between">
-          <h1>Snel overzicht taken</h1>
-          <Button>
-            <Link to="/student/taken">Bekijk alle taken</Link>
-          </Button>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Taak</TableHead>
-              <TableHead>Klas</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Deadline</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Score</TableHead>
-              <TableHead>Feedback vd docent</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {student.tasks.slice(-5).map((task) => (
-              <TableRow key={task.lecture}>
-                <TableCell>{task.lecture}</TableCell>
-                <TableCell>{task.klas}</TableCell>
-                <TableCell>{task.type}</TableCell>
-                <TableCell>{task.deadline}</TableCell>
-                <TableCell>{task.status}</TableCell>
-                <TableCell>
-                  {task.gottenPoints}/{task.totalPoints}
-                </TableCell>
-                <TableCell>{task.feedback}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <h1>Snel overzicht taken</h1>
+        <TasksTable table={table} />
       </div>
+
+      <FilterSection
+        klas={klas}
+        setKlas={setKlas}
+        type={type}
+        setType={setType}
+        tasks={currentStudent.tasks}
+      />
+
+      <PerformanceChart
+        data={chartData}
+        klas={klas}
+        type={type}
+        config={chartConfig}
+      />
     </div>
   );
 };
