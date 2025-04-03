@@ -9,21 +9,60 @@ import {
   CardTitle,
 } from "../ui/card";
 
-interface DashboardCardsProps {
-  personalAverage: number;
-  classAverage: number;
-  averageTotalPoints: number;
-  completedTasks: number;
-  totalTasks: number;
+import { mockStudents } from "@/data/mockStudents";
+
+interface Task {
+  gottenPoints: number;
+  totalPoints: number;
+  status: string;
+  lecture: string;
 }
 
-export const DashboardCards = ({
-  personalAverage,
-  classAverage,
-  averageTotalPoints,
-  completedTasks,
-  totalTasks,
-}: DashboardCardsProps) => {
+interface DashboardCardsProps {
+  tasks: Task[];
+}
+
+export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
+  const calculateClassAverage = () => {
+    const allTasks = mockStudents.flatMap((student) => student.tasks);
+    const taskGroups = allTasks.reduce(
+      (acc, task) => {
+        if (!acc[task.lecture]) {
+          acc[task.lecture] = [];
+        }
+        acc[task.lecture].push(task);
+        return acc;
+      },
+      {} as Record<string, typeof allTasks>,
+    );
+
+    const taskAverages = Object.values(taskGroups).map((tasks) => ({
+      gottenPoints:
+        tasks.reduce((sum, task) => sum + task.gottenPoints, 0) / tasks.length,
+      totalPoints:
+        tasks.reduce((sum, task) => sum + task.totalPoints, 0) / tasks.length,
+    }));
+
+    return (
+      taskAverages.reduce((sum, avg) => sum + avg.gottenPoints, 0) /
+      taskAverages.length
+    );
+  };
+
+  const personalAverage =
+    tasks.length > 0
+      ? tasks.reduce((acc, curr) => acc + curr.gottenPoints, 0) / tasks.length
+      : 0;
+
+  const averageTotalPoints =
+    tasks.length > 0
+      ? tasks.reduce((acc, curr) => acc + curr.totalPoints, 0) / tasks.length
+      : 0;
+
+  const completedTasks = tasks.filter(
+    (task) => task.status === "Ingeleverd",
+  ).length;
+  const totalTasks = tasks.length;
   return (
     <div className="my-10 flex gap-4 px-6">
       <Card className="w-full">
@@ -31,7 +70,7 @@ export const DashboardCards = ({
           <TrendingUp />
           <CardTitle>Jouw gemiddelde</CardTitle>
           <CardDescription className="text-center">
-            {personalAverage.toFixed(2)} / {averageTotalPoints}
+            {personalAverage.toFixed(2)} / {averageTotalPoints.toFixed(2)}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -45,7 +84,8 @@ export const DashboardCards = ({
           <UsersRound />
           <CardTitle>Klas gemiddelde</CardTitle>
           <CardDescription className="text-center">
-            {classAverage.toFixed(2)} / {averageTotalPoints}
+            {calculateClassAverage().toFixed(2)} /{" "}
+            {averageTotalPoints.toFixed(2)}
           </CardDescription>
         </CardHeader>
       </Card>
