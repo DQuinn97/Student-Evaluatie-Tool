@@ -10,6 +10,7 @@ import StudentStagedagboekIngave from "./components/StudentStagedagboekIngave";
 import StudentDashboard from "./components/StudentDashboard";
 import StudentTaken from "./components/StudentTaken";
 import { TaskDetail } from "./components/TaskDetail";
+import StudentStagedagboekOverview from "./components/StudentStagedagboekOverview";
 
 function App() {
   return (
@@ -21,7 +22,15 @@ function App() {
         <Route path="/reset-password" element={<ResetPass />} />
         <Route path="/profile" element={<Profile />} />
         <Route
+          path="/student/stagedagboek"
+          element={<StudentStagedagboekOverview />}
+        />
+        <Route
           path="/student/stagedagboek/ingave"
+          element={<StudentStagedagboekIngave />}
+        />
+        <Route
+          path="/student/stagedagboek/ingave/:id"
           element={<StudentStagedagboekIngave />}
         />
         <Route path="/student/dashboard" element={<StudentDashboard />} />
