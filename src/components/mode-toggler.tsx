@@ -7,7 +7,8 @@ export function ModeToggler() {
 
   return (
     <Button
-      variant="outline"
+      variant="secondary"
+      className="cursor-pointer"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
     >
       {theme === "light" ? <Sun /> : <Moon />}

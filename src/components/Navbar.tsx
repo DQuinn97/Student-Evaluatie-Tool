@@ -14,10 +14,11 @@ import {
 
 import { CircleUserRound } from "lucide-react";
 import { ModeToggler } from "./mode-toggler";
+import { Link } from "react-router";
 
 const Navbar = () => {
   return (
-    <NavigationMenu className="mb-4 flex max-w-full justify-between border-b border-b-gray-500">
+    <NavigationMenu className="mb-4 flex max-w-full justify-between border-b border-b-gray-500 pr-4">
       <NavigationMenuList>
         <NavigationMenuList asChild>
           <img src="https://placehold.co/200x50" alt="" />
@@ -38,17 +39,21 @@ const Navbar = () => {
           <span className="text-lg font-medium">Calendar</span>
         </NavigationMenuLink>
       </NavigationMenuList>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         <ModeToggler />
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <CircleUserRound className="size-7 stroke-1" />
+            <CircleUserRound className="size-7 cursor-pointer stroke-1" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>Profile</DropdownMenuLabel>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Naam</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link to="/profile">Profiel</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link to="/logout">Logout</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
