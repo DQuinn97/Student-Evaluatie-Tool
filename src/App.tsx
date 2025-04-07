@@ -7,7 +7,6 @@ import ResetPass from "./components/ResetPass";
 import Profile from "./components/Profile";
 import StudentStagedagboekIngave from "./components/StudentStagedagboekIngave";
 import StudentDashboard from "./components/StudentDashboard";
-import StudentTaken from "./components/StudentTaken";
 import { TaskDetail } from "./components/TaskDetail";
 import StudentStagedagboekOverview from "./components/StudentStagedagboekOverview";
 import Sidebar from "./app/sidebar/page";
@@ -41,7 +40,6 @@ function App() {
                   path="/student/dashboard"
                   element={<StudentDashboard />}
                 />
-                <Route path="/student/taken" element={<StudentTaken />} />
                 <Route path="/student/taken/:id" element={<TaskDetail />} />
               </Routes>
             </Sidebar>

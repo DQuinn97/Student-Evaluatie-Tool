@@ -1,13 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeToggler } from "@/components/mode-toggler";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import { PageBreadcrumb } from "@/components/ui/page-breadcrumb";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,8 +17,22 @@ import {
 } from "@/components/ui/sidebar";
 import { CircleUserRound } from "lucide-react";
 import { Link } from "react-router";
+import { useState, useEffect } from "react";
 
 export default function Page({ children }: { children: React.ReactNode }) {
+  const [userName, setUserName] = useState<string>("");
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/profiel", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setUserName(data.naam ? `${data.naam} ${data.achternaam}` : data.email);
+      })
+      .catch(() => setUserName("Student"));
+  }, []);
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -33,19 +40,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
         <header className="bg-background sticky top-0 z-10 mb-2 flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage className="text-muted-foreground">
-                  Naam
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Dashboard</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumb userName={userName} />
           <div className="ml-auto flex items-center gap-4">
             <ModeToggler />
             <DropdownMenu>
@@ -53,7 +48,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
                 <CircleUserRound className="size-7 cursor-pointer stroke-1" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>Naam</DropdownMenuLabel>
+                <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Link to="/profile">Profiel</Link>
