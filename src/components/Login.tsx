@@ -1,13 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import api from "../api";
 
 import { Button } from "../components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,28 +15,53 @@ import {
 } from "../components/ui/form";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string().email().min(1, "Please enter a valid email address"),
-  password: z.string(),
+  wachtwoord: z.string(),
 });
 
 const Login = () => {
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
+      wachtwoord: "",
     },
   });
 
-  function onSubmit() {
+  const [isLoading, setIsLoading] = useState(false);
+  const onSubmit = async function () {
+    setIsLoading(true);
     try {
-      toast.success(`Login successful, you will be redirected soon.`);
+      await fetch("http://localhost:3000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.getValues("email"),
+          wachtwoord: form.getValues("wachtwoord"),
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data.message);
+        });
+      toast.success("Login successvol, je zult zometeen doorgestuurd worden");
+      setTimeout(() => {
+        navigate("/student/dashboard");
+      }, 1500);
     } catch (error) {
-      toast.error((error as Error).message);
+      toast.error((error as { message: string }).message ?? "Onbekende fout");
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
+
   return (
     <div className="flex h-screen flex-col items-center justify-center">
       <div className="text-2xl font-bold">Login</div>
@@ -51,38 +76,47 @@ const Login = () => {
                 <FormControl>
                   <Input placeholder="Email" {...field} />
                 </FormControl>
-                {/* <FormDescription>
-                  An email will be send for confirmation
-                </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
-            name="password"
+            name="wachtwoord"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Wachtwoord</FormLabel>
                 <FormControl>
-                  <Input placeholder="Password" type="password" {...field} />
+                  <Input
+                    placeholder="Wachtwoord"
+                    type="password"
+                    autoComplete="off"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
-            Login
+          <Button disabled={isLoading} className="w-full" aria-busy={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Checking
+              </>
+            ) : (
+              "Login"
+            )}
           </Button>
         </form>
         <div className="text-muted-foreground text-sm">
-          Don't have an account?{" "}
+          Heb je nog geen account?{" "}
           <Link to="/register" className="text-blue-500">
-            Register
+            Registreren
           </Link>
         </div>
         <div className="text-muted-foreground text-sm">
-          Forgot password?{" "}
+          Wachtwoord vergeten?{" "}
           <Link to="/reset-password" className="text-blue-500">
             Reset
           </Link>
