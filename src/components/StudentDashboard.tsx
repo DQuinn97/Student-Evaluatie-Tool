@@ -11,23 +11,6 @@ import { DataTable } from "./shared/DataTable";
 import { FilterSection } from "./dashboard/FilterSection";
 import { PerformanceChart } from "./dashboard/PerformanceChart";
 
-// Update chartData mapping to include totalPoints
-const chartData = mockStudents[0].tasks
-  .sort(
-    (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
-  )
-  .map((task) => ({
-    id: task.id,
-    lecture: task.lecture,
-    points: task.gottenPoints,
-    totalPoints: task.totalPoints,
-    type: task.type,
-    klas: task.klas,
-    deadline: task.deadline,
-    status: task.status,
-    feedback: task.feedback,
-  }));
-
 const chartConfig = {
   name: {
     label: "Naam",
@@ -54,8 +37,42 @@ const StudentDashboard = () => {
   const [type, setType] = useState<string | null>("alle");
   const currentStudent = mockStudents[0];
 
+  // Create data for the table with all tasks
+  const tableData = currentStudent.tasks
+    .sort(
+      (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
+    )
+    .map((task) => ({
+      id: task.id,
+      lecture: task.lecture,
+      gottenPoints: task.gottenPoints,
+      totalPoints: task.totalPoints,
+      type: task.type,
+      klas: task.klas,
+      deadline: task.deadline,
+      status: task.status,
+      feedback: task.feedback,
+    }));
+
+  // Create separate data for the chart
+  const chartData = currentStudent.tasks
+    .sort(
+      (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
+    )
+    .map((task) => ({
+      id: task.id,
+      lecture: task.lecture,
+      points: task.gottenPoints,
+      totalPoints: task.totalPoints,
+      type: task.type,
+      klas: task.klas,
+      deadline: task.deadline,
+      status: task.status,
+      feedback: task.feedback,
+    }));
+
   const table = useTableConfig({
-    data: chartData,
+    data: tableData,
     columns: studentColumns,
     pageSize: 5,
   });
