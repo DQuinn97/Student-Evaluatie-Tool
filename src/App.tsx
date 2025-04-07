@@ -1,5 +1,4 @@
 import "./App.css";
-import Navbar from "./components/Navbar";
 import { Routes, Route } from "react-router";
 import { Toaster } from "./components/ui/sonner";
 import Register from "./components/Register";
@@ -11,31 +10,43 @@ import StudentDashboard from "./components/StudentDashboard";
 import StudentTaken from "./components/StudentTaken";
 import { TaskDetail } from "./components/TaskDetail";
 import StudentStagedagboekOverview from "./components/StudentStagedagboekOverview";
+import Sidebar from "./app/sidebar/page";
 
 function App() {
   return (
     <>
-      <Navbar />
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPass />} />
-        <Route path="/profile" element={<Profile />} />
         <Route
-          path="/student/stagedagboek"
-          element={<StudentStagedagboekOverview />}
+          path="/*"
+          element={
+            <Sidebar>
+              <Routes>
+                <Route path="/profile" element={<Profile />} />
+                <Route
+                  path="/student/stagedagboek"
+                  element={<StudentStagedagboekOverview />}
+                />
+                <Route
+                  path="/student/stagedagboek/ingave"
+                  element={<StudentStagedagboekIngave />}
+                />
+                <Route
+                  path="/student/stagedagboek/ingave/:id"
+                  element={<StudentStagedagboekIngave />}
+                />
+                <Route
+                  path="/student/dashboard"
+                  element={<StudentDashboard />}
+                />
+                <Route path="/student/taken" element={<StudentTaken />} />
+                <Route path="/student/taken/:id" element={<TaskDetail />} />
+              </Routes>
+            </Sidebar>
+          }
         />
-        <Route
-          path="/student/stagedagboek/ingave"
-          element={<StudentStagedagboekIngave />}
-        />
-        <Route
-          path="/student/stagedagboek/ingave/:id"
-          element={<StudentStagedagboekIngave />}
-        />
-        <Route path="/student/dashboard" element={<StudentDashboard />} />
-        <Route path="/student/taken" element={<StudentTaken />} />
-        <Route path="/student/taken/:id" element={<TaskDetail />} />
       </Routes>
       <Toaster />
     </>
