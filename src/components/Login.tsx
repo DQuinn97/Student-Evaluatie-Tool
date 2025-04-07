@@ -37,21 +37,26 @@ const Login = () => {
   const onSubmit = async function () {
     setIsLoading(true);
     try {
-      await fetch("http://localhost:3000/api/auth/login", {
+      const response = await fetch("http://localhost:3000/api/auth/login", {
         method: "POST",
         headers: {
+          "Access-Control-Allow-Origin": "http://localhost:3000",
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           email: form.getValues("email"),
           wachtwoord: form.getValues("wachtwoord"),
         }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data.message);
-        });
-      toast.success("Login successvol, je zult zometeen doorgestuurd worden");
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
       setTimeout(() => {
         navigate("/student/dashboard");
       }, 1500);
