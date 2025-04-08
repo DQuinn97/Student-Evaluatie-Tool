@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useCallback, useMemo, useState } from "react";
+import debounce from "lodash/debounce";
 
 interface DataTableProps {
   table: ReactTable<any>;
@@ -34,42 +36,88 @@ export const DataTable = ({
   showRowSelection = false,
   emptyMessage = "No data found.",
 }: DataTableProps) => {
+  const [filterValue, setFilterValue] = useState("");
+
+  // Debounce the filter change handler
+  const debouncedFilterChange = useMemo(
+    () =>
+      debounce((value: string) => {
+        table.getColumn(filterColumn)?.setFilterValue(value);
+      }, 300),
+    [table, filterColumn],
+  );
+
+  // Memoized handler for filter input changes
+  const handleFilterChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setFilterValue(value);
+      debouncedFilterChange(value);
+    },
+    [debouncedFilterChange],
+  );
+
+  // Memoized pagination controls
+  const paginationControls = useMemo(() => {
+    const totalPages = table.getPageCount();
+    const currentPage = table.getState().pagination.pageIndex + 1;
+
+    return (
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium">
+            Page {currentPage} of {totalPages}
+          </span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button>
+      </div>
+    );
+  }, [table]);
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <div className="flex items-center space-x-2">
           <Input
             placeholder={filterPlaceholder}
-            value={
-              (table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn(filterColumn)?.setFilterValue(event.target.value)
-            }
+            value={filterValue}
+            onChange={handleFilterChange}
             className="max-w-sm"
           />
-          {showRowSelection && (
-            <Select
-              defaultValue={String(table.getState().pagination.pageSize)}
-              onValueChange={(value) => {
-                table.setPageSize(Number(value));
-              }}
-            >
-              <SelectTrigger className="w-[100px]">
-                <SelectValue>
-                  {table.getState().pagination.pageSize}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {[5, 10, 20, 30, 40, 50].map((pageSize) => (
-                  <SelectItem key={pageSize} value={String(pageSize)}>
-                    {pageSize} rows
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
         </div>
+
+        <Select
+          value={table.getState().pagination.pageSize.toString()}
+          onValueChange={(value) => {
+            table.setPageSize(Number(value));
+          }}
+        >
+          <SelectTrigger className="h-8 w-[70px]">
+            <SelectValue placeholder={table.getState().pagination.pageSize} />
+          </SelectTrigger>
+          <SelectContent side="top">
+            {[5, 10, 20, 30, 40, 50].map((pageSize) => (
+              <SelectItem key={pageSize} value={pageSize.toString()}>
+                {pageSize}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-md border">
@@ -81,7 +129,9 @@ export const DataTable = ({
                   <TableHead key={header.id}>
                     {header.isPlaceholder ? null : (
                       <div
-                        className="flex cursor-pointer items-center space-x-2"
+                        className={`flex items-center space-x-2 ${
+                          header.column.getCanSort() ? "cursor-pointer" : ""
+                        }`}
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(
@@ -107,9 +157,12 @@ export const DataTable = ({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
@@ -134,28 +187,7 @@ export const DataTable = ({
         </Table>
       </div>
 
-      {table.getCanPreviousPage() || table.getCanNextPage() ? (
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      ) : null}
+      {paginationControls}
     </div>
   );
 };

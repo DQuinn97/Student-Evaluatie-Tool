@@ -1,11 +1,7 @@
 import { ChartConfig } from "@/components/ui/chart";
-import { useState } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useTableConfig } from "@/hooks/useTableConfig";
-
-import { mockStudents } from "@/data/mockStudents";
 import { studentColumns } from "@/components/table/studentColumns";
-
-// Dashboard components
 import { DashboardCards } from "./dashboard/DashboardCards";
 import { DataTable } from "./shared/DataTable";
 import { FilterSection } from "./dashboard/FilterSection";
@@ -35,54 +31,97 @@ const chartConfig = {
 const StudentDashboard = () => {
   const [klas, setKlas] = useState<string | null>("alle");
   const [type, setType] = useState<string | null>("alle");
-  const currentStudent = mockStudents[0];
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [userData, setUserData] = useState<any>(null);
 
-  // Create data for the table with all tasks
-  const tableData = currentStudent.tasks
-    .sort(
-      (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
-    )
-    .map((task) => ({
-      id: task.id,
-      lecture: task.lecture,
-      gottenPoints: task.gottenPoints,
-      totalPoints: task.totalPoints,
-      type: task.type,
-      klas: task.klas,
-      deadline: task.deadline,
-      status: task.status,
-      feedback: task.feedback,
-    }));
+  useEffect(() => {
+    // Fetch user data
+    fetch("http://localhost:3000/api/profiel", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setUserData(data))
+      .catch((err) => console.error("Error fetching user data:", err));
 
-  // Create separate data for the chart
-  const chartData = currentStudent.tasks
-    .sort(
-      (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
-    )
-    .map((task) => ({
-      id: task.id,
-      lecture: task.lecture,
-      points: task.gottenPoints,
-      totalPoints: task.totalPoints,
-      type: task.type,
-      klas: task.klas,
-      deadline: task.deadline,
-      status: task.status,
-      feedback: task.feedback,
-    }));
+    // Fetch tasks data
+    fetch("http://localhost:3000/api/taken", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setTasks(data))
+      .catch((err) => console.error("Error fetching tasks:", err));
+  }, []);
 
+  // Memoize the sorted table data
+  const tableData = useMemo(
+    () =>
+      tasks
+        .sort(
+          (a, b) =>
+            new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
+        )
+        .map((task) => ({
+          id: task._id,
+          lecture: task.titel,
+          gottenPoints: task.gradering?.[0]?.score || 0,
+          totalPoints: task.weging,
+          type: task.type,
+          klas: task.klasgroep?.naam,
+          deadline: task.deadline,
+          status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
+          feedback: task.gradering?.[0]?.feedback || "",
+        })),
+    [tasks],
+  );
+
+  // Memoize the chart data
+  const chartData = useMemo(
+    () =>
+      tasks
+        .sort(
+          (a, b) =>
+            new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
+        )
+        .map((task) => ({
+          id: task._id,
+          lecture: task.titel,
+          points: task.gradering?.[0]?.score || 0,
+          totalPoints: task.weging,
+          type: task.type,
+          klas: task.klasgroep?.naam,
+          deadline: task.deadline,
+          status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
+          feedback: task.gradering?.[0]?.feedback || "",
+        })),
+    [tasks],
+  );
+
+  // Memoize the table configuration
   const table = useTableConfig({
     data: tableData,
     columns: studentColumns,
     pageSize: 5,
   });
 
+  // Memoize filter handlers
+  const handleKlasChange = useCallback((newKlas: string | null) => {
+    setKlas(newKlas);
+  }, []);
+
+  const handleTypeChange = useCallback((newType: string | null) => {
+    setType(newType);
+  }, []);
+
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div>
       <h1 className="ml-4 text-4xl font-bold">
-        {currentStudent.name.split(" ")[0]}'s Dashboard
+        {userData.naam ? `${userData.naam}'s Dashboard` : "Dashboard"}
       </h1>
-      <DashboardCards tasks={currentStudent.tasks} />
+      <DashboardCards tasks={tableData} />
 
       <div className="mx-10">
         <h1>Snel overzicht taken</h1>
@@ -97,10 +136,10 @@ const StudentDashboard = () => {
 
       <FilterSection
         klas={klas}
-        setKlas={setKlas}
+        setKlas={handleKlasChange}
         type={type}
-        setType={setType}
-        tasks={currentStudent.tasks}
+        setType={handleTypeChange}
+        tasks={tableData}
       />
 
       <PerformanceChart
