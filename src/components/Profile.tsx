@@ -151,19 +151,19 @@ const Profile = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-          <Label className="mt-2">Naam</Label>
+          <Label className="mt-2">Voornaam</Label>
           <Input
             type="text"
-            placeholder="Doe"
+            placeholder="John"
             value={formData.naam}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, naam: e.target.value }))
             }
           />
-          <Label className="mt-2">Voornaam</Label>
+          <Label className="mt-2">Naam</Label>
           <Input
             type="text"
-            placeholder="John"
+            placeholder="Doe"
             value={formData.achternaam}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, achternaam: e.target.value }))
