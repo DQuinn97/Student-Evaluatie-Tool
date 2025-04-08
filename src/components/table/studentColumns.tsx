@@ -99,7 +99,7 @@ export const studentColumns: ColumnDef<any>[] = [
           <DropdownMenuLabel>Acties</DropdownMenuLabel>
           <DropdownMenuItem asChild>
             <Link
-              to={`/student/taken/${row.original.id}`}
+              to={`/student/taken/${row.original.taakId}`}
               className="block w-full"
             >
               Bekijk in detail

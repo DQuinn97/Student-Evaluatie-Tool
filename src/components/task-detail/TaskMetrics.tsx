@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface TaskMetricsProps {
   deadline: string;
-  status: string;
+  status: "Open" | "Ingeleverd" | "Te laat";
   gottenPoints: number;
   totalPoints: number;
 }
@@ -16,6 +16,9 @@ export const TaskMetrics = ({
   gottenPoints,
   totalPoints,
 }: TaskMetricsProps) => {
+  const isLate = new Date(deadline) < new Date() && status === "Open";
+  const displayStatus = isLate ? "Te laat" : status;
+
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       <Card>
@@ -29,9 +32,9 @@ export const TaskMetrics = ({
             })}
           </p>
           <p className="text-muted-foreground text-sm">
-            {status === "Te laat" && "Te laat ingeleverd"}
-            {status === "Bezig" && "Nog tijd over"}
-            {status === "Ingeleverd" && "Op tijd ingeleverd"}
+            {displayStatus === "Te laat" && "Te laat ingeleverd"}
+            {displayStatus === "Open" && "Nog tijd over"}
+            {displayStatus === "Ingeleverd" && "Op tijd ingeleverd"}
           </p>
         </CardContent>
       </Card>
@@ -43,18 +46,18 @@ export const TaskMetrics = ({
         <CardContent>
           <Badge
             variant={
-              status === "Ingeleverd"
+              displayStatus === "Ingeleverd"
                 ? "success"
-                : status === "Te laat"
+                : displayStatus === "Te laat"
                   ? "destructive"
                   : "default"
             }
           >
-            {status}
+            {displayStatus}
           </Badge>
-          {status === "Ingeleverd" && (
+          {displayStatus === "Ingeleverd" && gottenPoints > 0 && (
             <p className="text-muted-foreground mt-2 text-sm">
-              4 dagen geleden gedaan
+              Score ontvangen
             </p>
           )}
         </CardContent>
@@ -68,9 +71,11 @@ export const TaskMetrics = ({
           <div className="text-2xl font-bold">
             {gottenPoints}/{totalPoints}
           </div>
-          <p className="text-muted-foreground text-sm">
-            {((gottenPoints / totalPoints) * 100).toFixed(0)}%
-          </p>
+          {totalPoints > 0 && (
+            <p className="text-muted-foreground text-sm">
+              {((gottenPoints / totalPoints) * 100).toFixed(0)}%
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

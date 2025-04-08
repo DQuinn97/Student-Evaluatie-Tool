@@ -40,7 +40,7 @@ function App() {
                   path="/student/dashboard"
                   element={<StudentDashboard />}
                 />
-                <Route path="/student/taken/:id" element={<TaskDetail />} />
+                <Route path="/student/taken/:taakId" element={<TaskDetail />} />
               </Routes>
             </Sidebar>
           }

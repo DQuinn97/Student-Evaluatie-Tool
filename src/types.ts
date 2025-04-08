@@ -5,7 +5,7 @@ export type Student = {
 };
 
 export type Task = {
-  id: number;
+  taakId: string;
   lecture: string;
   klas: string;
   type: string;

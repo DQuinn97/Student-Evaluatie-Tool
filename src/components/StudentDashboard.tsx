@@ -61,7 +61,7 @@ const StudentDashboard = () => {
             new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
         )
         .map((task) => ({
-          id: task._id,
+          taakId: task._id,
           lecture: task.titel,
           gottenPoints: task.gradering?.[0]?.score || 0,
           totalPoints: task.weging,
@@ -83,7 +83,7 @@ const StudentDashboard = () => {
             new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
         )
         .map((task) => ({
-          id: task._id,
+          taakId: task._id,
           lecture: task.titel,
           points: task.gradering?.[0]?.score || 0,
           totalPoints: task.weging,
