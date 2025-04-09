@@ -16,11 +16,14 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { CircleUserRound } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
+import api from "@/api";
 
 export default function Page({ children }: { children: React.ReactNode }) {
   const [userName, setUserName] = useState<string>("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://localhost:3000/api/profiel", {
@@ -32,6 +35,15 @@ export default function Page({ children }: { children: React.ReactNode }) {
       })
       .catch(() => setUserName("Student"));
   }, []);
+
+  const logout = () => {
+    api
+      .post("/auth/logout")
+      .then(() => {
+        navigate("/login");
+      })
+      .catch((err) => console.error(err));
+  };
 
   return (
     <SidebarProvider>
@@ -53,9 +65,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem>
                   <Link to="/profile">Profiel</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link to="/logout">Logout</Link>
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

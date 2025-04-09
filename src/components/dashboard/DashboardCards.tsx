@@ -1,16 +1,13 @@
 import { ClipboardCheck, TrendingUp, UsersRound } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import api from "@/api";
+import { useEffect, useState } from "react";
 
 interface Task {
   gottenPoints: number;
   totalPoints: number;
   status: string;
+  taakId: number;
 }
 
 interface DashboardCardsProps {
@@ -18,20 +15,52 @@ interface DashboardCardsProps {
 }
 
 export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
-  const calculateClassAverage = () => {
-    // Currently we don't have class average from the API
-    // TODO: Add endpoint to get class average
-    return 0;
-  };
+  const [classAverage, setClassAverage] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchClassAverage = async () => {
+      try {
+        const averages = await Promise.all(
+          tasks.map((task) =>
+            api
+              .get(`/taken/${task.taakId}/score`)
+              .then(({ data }) => data)
+              .catch(() => null),
+          ),
+        );
+        const validAverages = averages.filter((avg) => avg !== null);
+        if (validAverages.length > 0) {
+          setClassAverage(
+            validAverages.reduce((acc, curr) => acc + curr, 0) /
+              validAverages.length,
+          );
+        }
+      } catch (err) {
+        console.error("Error fetching class averages:", err);
+      }
+    };
+
+    if (tasks.length > 0) {
+      fetchClassAverage();
+    }
+  }, [tasks]);
+
+  // Only include tasks that have been graded and have non-zero points
+  const gradedTasks = tasks.filter(
+    (task) =>
+      task.status === "Ingeleverd" &&
+      task.gottenPoints > 0 &&
+      task.totalPoints > 0,
+  );
 
   const personalAverage =
-    tasks.length > 0
-      ? tasks.reduce((acc, curr) => acc + curr.gottenPoints, 0) / tasks.length
-      : 0;
-
-  const averageTotalPoints =
-    tasks.length > 0
-      ? tasks.reduce((acc, curr) => acc + curr.totalPoints, 0) / tasks.length
+    gradedTasks.length > 0
+      ? (gradedTasks.reduce(
+          (acc, curr) => acc + curr.gottenPoints / curr.totalPoints,
+          0,
+        ) /
+          gradedTasks.length) *
+        100
       : 0;
 
   const completedTasks = tasks.filter(
@@ -46,7 +75,7 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
           <TrendingUp />
           <CardTitle>Jouw gemiddelde</CardTitle>
           <CardDescription className="text-center">
-            {personalAverage.toFixed(2)} / {averageTotalPoints.toFixed(2)}
+            {personalAverage > 0 ? `${personalAverage.toFixed(1)}%` : "-/-"}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -55,8 +84,9 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
           <UsersRound />
           <CardTitle>Klas gemiddelde</CardTitle>
           <CardDescription className="text-center">
-            {calculateClassAverage().toFixed(2)} /{" "}
-            {averageTotalPoints.toFixed(2)}
+            {classAverage && classAverage > 0
+              ? `${classAverage.toFixed(1)}%`
+              : "-/-"}
           </CardDescription>
         </CardHeader>
       </Card>

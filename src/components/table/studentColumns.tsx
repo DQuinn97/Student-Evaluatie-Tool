@@ -74,11 +74,26 @@ export const studentColumns: ColumnDef<Student>[] = [
   {
     accessorKey: "score",
     header: "Score",
-    cell: ({ row }) => (
-      <div>
-        {row.original.gottenPoints}/{row.original.totalPoints}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const hasScore = row.original.hasGradering; // This will be true if there's a grading
+      const points = row.original.gottenPoints;
+      const total = row.original.totalPoints;
+
+      // Only show -/- if there's no grading
+      if (!hasScore) {
+        return <div>-/-</div>;
+      }
+
+      const percentage = total > 0 ? ((points / total) * 100).toFixed(1) : 0;
+      return (
+        <div className="flex items-center gap-2">
+          <span>
+            {points}/{total}
+          </span>
+          <span className="text-muted-foreground text-sm">({percentage}%)</span>
+        </div>
+      );
+    },
     enableSorting: true,
   },
   {

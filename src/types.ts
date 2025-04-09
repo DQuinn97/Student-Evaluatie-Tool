@@ -18,6 +18,7 @@ export type Student = {
   feedback: string;
   totalPoints: number;
   gottenPoints: number;
+  hasGradering: boolean;
   tasks: Task[];
 };
 

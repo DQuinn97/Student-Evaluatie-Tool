@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useForm, useFormState } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "../components/ui/button";
 import {
@@ -13,133 +13,229 @@ import {
 } from "../components/ui/form";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import api from "@/api";
+import { useNavigate, useParams } from "react-router";
 
-export type ResetPasswordForm = {
+// Form types
+type ResetRequestForm = {
+  email: string;
+};
+
+type ResetPasswordForm = {
   password: string;
   password2: string;
 };
 
-export const passwordZodSchema = z
+// Validation schemas
+const resetRequestSchema = z.object({
+  email: z.string().email("Voer een geldig emailadres in"),
+});
+
+const passwordSchema = z
   .object({
     password: z
       .string({
-        required_error: "Password can not be empty.",
+        required_error: "Wachtwoord mag niet leeg zijn.",
       })
       .regex(/^.{8,20}$/, {
-        message: "Minimum 8 and maximum 20 characters.",
+        message: "Minimaal 8 en maximaal 20 karakters.",
       })
       .regex(/(?=.*[A-Z])/, {
-        message: "At least one uppercase character.",
+        message: "Ten minste één hoofdletter.",
       })
       .regex(/(?=.*[a-z])/, {
-        message: "At least one lowercase character.",
+        message: "Ten minste één kleine letter.",
       })
       .regex(/(?=.*\d)/, {
-        message: "At least one digit.",
+        message: "Ten minste één cijfer.",
       })
       .regex(/[$&+,:;=?@#|'<>.^*()%!-]/, {
-        message: "At least one special character.",
+        message: "Ten minste één speciaal teken.",
       }),
     password2: z.string({
-      required_error: "Password confirmation can not be empty.",
+      required_error: "Wachtwoord bevestiging mag niet leeg zijn.",
     }),
   })
   .refine(({ password, password2 }) => password === password2, {
     path: ["password2"],
-    message: "Passwords must match.",
+    message: "Wachtwoorden moeten overeenkomen.",
   });
 
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { token } = useParams();
+  const navigate = useNavigate();
 
-  const form = useForm<ResetPasswordForm>({
-    resolver: zodResolver(passwordZodSchema),
+  const resetRequestForm = useForm<ResetRequestForm>({
+    resolver: zodResolver(resetRequestSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const resetPasswordForm = useForm<ResetPasswordForm>({
+    resolver: zodResolver(passwordSchema),
     defaultValues: {
       password: "",
       password2: "",
     },
   });
 
-  const { isSubmitting } = useFormState({
-    control: form.control,
-  });
-
-  function onSubmit() {
+  async function onResetRequest(data: ResetRequestForm) {
+    setIsLoading(true);
     try {
-      toast.success("Password reset successful, you will be redirected soon.");
+      await api.post("/auth/reset/request", {
+        email: data.email,
+        reset_link: `${window.location.origin}/reset-password`,
+      });
+      toast.success(
+        "Als dit emailadres bij ons bekend is, ontvang je een email met verdere instructies.",
+      );
     } catch (error) {
-      toast.error((error as Error).message);
+      toast.error("Er is iets misgegaan bij het versturen van de reset link.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function onPasswordReset(data: ResetPasswordForm) {
+    setIsLoading(true);
+    try {
+      await api.post("/auth/reset", {
+        wachtwoord: data.password,
+        resetToken: token,
+      });
+      toast.success("Wachtwoord succesvol gereset, je wordt nu doorgestuurd.");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (error) {
+      toast.error("Er is iets misgegaan bij het resetten van je wachtwoord.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
     <div className="flex h-screen flex-col items-center justify-center">
-      <div className="mb-4 text-2xl font-bold">Reset Password</div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>New Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
+      <div className="mb-4 text-2xl font-bold">
+        {token ? "Nieuw wachtwoord instellen" : "Wachtwoord vergeten"}
+      </div>
+      {token ? (
+        <Form {...resetPasswordForm}>
+          <form
+            onSubmit={resetPasswordForm.handleSubmit(onPasswordReset)}
+            className="space-y-8"
+          >
+            <FormField
+              control={resetPasswordForm.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nieuw wachtwoord</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        placeholder="Nieuw wachtwoord"
+                        type={showPassword ? "text" : "password"}
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-2.5 right-3"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                      >
+                        {showPassword ? (
+                          <EyeOff size={20} />
+                        ) : (
+                          <Eye size={20} />
+                        )}
+                      </button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={resetPasswordForm.control}
+              name="password2"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bevestig wachtwoord</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        placeholder="Bevestig wachtwoord"
+                        type={showConfirmPassword ? "text" : "password"}
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-2.5 right-3"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff size={20} />
+                        ) : (
+                          <Eye size={20} />
+                        )}
+                      </button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Bezig...
+                </>
+              ) : (
+                "Wachtwoord resetten"
+              )}
+            </Button>
+          </form>
+        </Form>
+      ) : (
+        <Form {...resetRequestForm}>
+          <form
+            onSubmit={resetRequestForm.handleSubmit(onResetRequest)}
+            className="space-y-8"
+          >
+            <FormField
+              control={resetRequestForm.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
                     <Input
-                      placeholder="New Password"
-                      type={showPassword ? "text" : "password"}
+                      placeholder="naam@voorbeeld.be"
+                      type="email"
                       {...field}
                     />
-                    <button
-                      type="button"
-                      className="absolute top-2.5 right-3"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password2"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      placeholder="Confirm Password"
-                      type={showConfirmPassword ? "text" : "password"}
-                      {...field}
-                    />
-                    <button
-                      type="button"
-                      className="absolute top-2.5 right-3"
-                      onClick={() => setShowConfirmPassword((prev) => !prev)}
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff size={20} />
-                      ) : (
-                        <Eye size={20} />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            Reset Password
-          </Button>
-        </form>
-      </Form>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Bezig...
+                </>
+              ) : (
+                "Reset link versturen"
+              )}
+            </Button>
+          </form>
+        </Form>
+      )}
     </div>
   );
 };

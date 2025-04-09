@@ -18,6 +18,9 @@ export const TaskMetrics = ({
 }: TaskMetricsProps) => {
   const isLate = new Date(deadline) < new Date() && status === "Open";
   const displayStatus = isLate ? "Te laat" : status;
+  const hasGradering = gottenPoints !== undefined && gottenPoints !== null;
+  const scorePercentage =
+    totalPoints > 0 ? ((gottenPoints / totalPoints) * 100).toFixed(1) : 0;
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -55,7 +58,7 @@ export const TaskMetrics = ({
           >
             {displayStatus}
           </Badge>
-          {displayStatus === "Ingeleverd" && gottenPoints > 0 && (
+          {hasGradering && (
             <p className="text-muted-foreground mt-2 text-sm">
               Score ontvangen
             </p>
@@ -68,14 +71,16 @@ export const TaskMetrics = ({
           <CardTitle>Score</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {gottenPoints}/{totalPoints}
+          <div className="flex flex-col gap-1">
+            <div className="text-2xl font-bold">
+              {hasGradering ? `${gottenPoints}/${totalPoints}` : "-/-"}
+            </div>
+            {hasGradering && totalPoints > 0 && (
+              <p className="text-muted-foreground text-sm">
+                {scorePercentage}%
+              </p>
+            )}
           </div>
-          {totalPoints > 0 && (
-            <p className="text-muted-foreground text-sm">
-              {((gottenPoints / totalPoints) * 100).toFixed(0)}%
-            </p>
-          )}
         </CardContent>
       </Card>
     </div>

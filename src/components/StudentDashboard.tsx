@@ -61,17 +61,22 @@ const StudentDashboard = () => {
           (a, b) =>
             new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
         )
-        .map((task) => ({
-          taakId: task._id,
-          lecture: task.titel,
-          gottenPoints: task.gradering?.[0]?.score || 0,
-          totalPoints: task.weging,
-          type: task.type,
-          klas: task.klasgroep?.naam,
-          deadline: task.deadline,
-          status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
-          feedback: task.gradering?.[0]?.feedback || "",
-        })),
+        .map((task) => {
+          const hasGradering = task.inzendingen?.[0]?.gradering?.length > 0;
+          const graderingData = task.inzendingen?.[0]?.gradering?.[0];
+          return {
+            taakId: task._id,
+            lecture: task.titel,
+            hasGradering,
+            gottenPoints: graderingData?.score ?? 0,
+            totalPoints: graderingData ? graderingData.maxscore : task.weging,
+            type: task.type,
+            klas: task.klasgroep?.naam,
+            deadline: task.deadline,
+            status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
+            feedback: graderingData?.feedback || "",
+          };
+        }),
     [tasks],
   );
 
@@ -83,17 +88,21 @@ const StudentDashboard = () => {
           (a, b) =>
             new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
         )
-        .map((task) => ({
-          taakId: task._id,
-          lecture: task.titel,
-          points: task.gradering?.[0]?.score || 0,
-          totalPoints: task.weging,
-          type: task.type,
-          klas: task.klasgroep?.naam,
-          deadline: task.deadline,
-          status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
-          feedback: task.gradering?.[0]?.feedback || "",
-        })),
+        .map((task) => {
+          const hasGradering = task.inzendingen?.[0]?.gradering?.[0];
+          const score = hasGradering?.score ?? 0;
+          return {
+            taakId: task._id,
+            lecture: task.titel,
+            points: score,
+            totalPoints: hasGradering ? hasGradering.maxscore : task.weging,
+            type: task.type,
+            klas: task.klasgroep?.naam,
+            deadline: task.deadline,
+            status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
+            feedback: hasGradering?.feedback || "",
+          };
+        }),
     [tasks],
   );
 

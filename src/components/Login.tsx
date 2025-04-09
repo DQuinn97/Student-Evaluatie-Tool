@@ -37,22 +37,14 @@ const Login = () => {
   const onSubmit = async function () {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": "http://localhost:3000",
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email: form.getValues("email"),
-          wachtwoord: form.getValues("wachtwoord"),
-        }),
+      const response = await api.post("/auth/login", {
+        email: form.getValues("email"),
+        wachtwoord: form.getValues("wachtwoord"),
       });
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
+      if (response.status === 200) {
         toast.success(data.message);
       } else {
         toast.error(data.message);
