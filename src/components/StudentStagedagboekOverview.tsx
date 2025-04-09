@@ -1,100 +1,74 @@
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { Download, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { useTableConfig } from "@/hooks/useTableConfig";
-import { DataTable } from "./shared/DataTable";
-import { ColumnDef } from "@tanstack/react-table";
+import { Button } from "./ui/button";
+import { Edit, Plus, Trash2, FileDown } from "lucide-react";
+import { toast } from "sonner";
 import jsPDF from "jspdf";
 
-interface StagedagboekEntry {
-  id: string;
-  date: string;
+interface Entry {
+  _id: string;
+  datum: string;
   voormiddag: string;
   namiddag: string;
   tools: string;
-  result: string;
+  resultaat: string;
 }
 
 const StudentStagedagboekOverview = () => {
   const navigate = useNavigate();
-  const [entries, setEntries] = useState<StagedagboekEntry[]>([
-    {
-      id: "1",
-      date: "2024-01-20",
-      voormiddag: "random",
-      namiddag: "random2",
-      tools: "random",
-      result: "random",
-    },
-    {
-      id: "2",
-      date: "2024-01-21",
-      voormiddag: "dssqdfghjklhgfdsqdfghjkljhgfdsfghjkldsfghjkllgfds  fgh",
-      namiddag:
-        "randlkqsjdhfglsmqjfhglmqsdjghlfdsjghdlsljglkdfjglsdjfglsdjfdsfggom2",
-      tools: "random",
-      result: "random",
-    },
-    {
-      id: "3",
-      date: "2024-01-22",
-      voormiddag: "randqdsffom",
-      namiddag: "qdssdfg",
-      tools: "random",
-      result: "random",
-    },
-  ]);
+  const [entries, setEntries] = useState<Entry[]>([]);
+
+  useEffect(() => {
+    const fetchDagboek = async () => {
+      try {
+        // First get the user's dagboek
+        const response = await fetch("/api/profiel", {
+          credentials: "include",
+        });
+        if (!response.ok) throw new Error("Failed to fetch profile");
+        const user = await response.json();
+
+        // Then get the dagboek details
+        const dagboekResponse = await fetch(`/api/dagboek/${user.dagboek}`, {
+          credentials: "include",
+        });
+        if (!dagboekResponse.ok) throw new Error("Failed to fetch dagboek");
+        const dagboek = await dagboekResponse.json();
+
+        setEntries(dagboek.stagedagen || []);
+      } catch (error) {
+        toast.error("Failed to load entries");
+        console.error(error);
+      }
+    };
+
+    fetchDagboek();
+  }, []);
 
   const handleEdit = (id: string) => {
     navigate(`/student/stagedagboek/ingave/${id}`);
   };
 
-  const handleDelete = (id: string) => {
-    setEntries(entries.filter((entry) => entry.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/dagboek/dag/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete entry");
+      }
+
+      setEntries(entries.filter((entry) => entry._id !== id));
+      toast.success("Entry deleted successfully");
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
   };
 
-  const columns: ColumnDef<StagedagboekEntry>[] = [
-    {
-      accessorKey: "id",
-      header: "ID",
-      enableSorting: true,
-    },
-    {
-      accessorKey: "date",
-      header: "Datum",
-      enableSorting: true,
-    },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => {
-        const entry = row.original;
-        return (
-          <div className="space-x-2 text-right">
-            <Button variant="outline" onClick={() => handleEdit(entry.id)}>
-              Bewerken
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" onClick={() => handleExport(entry)}>
-              <Download />
-            </Button>
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={() => handleDelete(entry.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-    },
-  ];
-
-  const handleExport = async (
-    entries: StagedagboekEntry[] | StagedagboekEntry,
-  ) => {
+  const handleExport = async (entries: Entry[] | Entry) => {
     try {
       // Create new PDF document
       const doc = new jsPDF();
@@ -116,7 +90,7 @@ const StudentStagedagboekOverview = () => {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(12);
 
-        doc.text(`Datum: ${entry.date}`, 20, startY);
+        doc.text(`Datum: ${entry.datum}`, 20, startY);
 
         // Handle long text with word wrap
         const splitVoormiddag = doc.splitTextToSize(
@@ -143,7 +117,7 @@ const StudentStagedagboekOverview = () => {
         );
 
         const splitResult = doc.splitTextToSize(
-          `Resultaat: ${entry.result}`,
+          `Resultaat: ${entry.resultaat}`,
           170,
         );
         doc.text(
@@ -157,41 +131,88 @@ const StudentStagedagboekOverview = () => {
       // Save and download the PDF with current date
       const fileName = Array.isArray(entries)
         ? `stagedagboek_export_${new Date().toISOString().split("T")[0]}.pdf`
-        : `stagedagboek_${entries.date}.pdf`;
+        : `stagedagboek_${entries.datum}.pdf`;
       doc.save(fileName);
     } catch (error) {
       console.error("Error exporting to PDF:", error);
     }
   };
 
-  const table = useTableConfig({
-    data: entries,
-    columns,
-    pageSize: 5,
-  });
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 md:py-12">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <h1 className="text-4xl font-bold">Stagedagboek</h1>
-        <div className="space-x-2">
-          <Button onClick={() => handleExport(entries)}>Exporteer</Button>
+        <div className="flex gap-2">
           <Button
-            variant="default"
+            variant="outline"
+            className="flex gap-2"
+            onClick={() => handleExport(entries)}
+          >
+            <FileDown className="size-4" />
+            Exporteer PDF
+          </Button>
+          <Button
+            className="flex gap-2"
             onClick={() => navigate("/student/stagedagboek/ingave")}
           >
+            <Plus className="size-4" />
             Nieuwe ingave
           </Button>
         </div>
       </div>
-
-      <DataTable
-        table={table}
-        filterColumn="date"
-        filterPlaceholder="Filter op datum..."
-        showRowSelection={false}
-        emptyMessage="Geen ingaves gevonden."
-      />
+      <div className="mt-8 space-y-4">
+        {entries.map((entry) => (
+          <div
+            key={entry._id}
+            className="flex flex-col gap-4 rounded-lg border p-6 shadow-sm"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">
+                {new Date(entry.datum).toLocaleDateString("nl-BE", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </h2>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleEdit(entry._id)}
+                >
+                  <Edit className="size-4" />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => handleDelete(entry._id)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium">Voormiddag</h3>
+                <p className="text-muted-foreground mt-1">{entry.voormiddag}</p>
+              </div>
+              <div>
+                <h3 className="font-medium">Namiddag</h3>
+                <p className="text-muted-foreground mt-1">{entry.namiddag}</p>
+              </div>
+              <div>
+                <h3 className="font-medium">Gebruikte tools</h3>
+                <p className="text-muted-foreground mt-1">{entry.tools}</p>
+              </div>
+              <div>
+                <h3 className="font-medium">Resultaat</h3>
+                <p className="text-muted-foreground mt-1">{entry.resultaat}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
