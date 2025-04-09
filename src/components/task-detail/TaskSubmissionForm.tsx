@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FileIcon, Loader2, Trash2Icon, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
@@ -6,18 +6,8 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { useParams } from "react-router";
-
-interface TaskSubmission {
-  url: string;
-  githubUrl: string;
-  description: string;
-}
-
-interface TaskSubmissionFormProps {
-  isSubmitted: boolean;
-  initialSubmission?: TaskSubmission;
-  submittedFiles?: string[];
-}
+import { TaskSubmission, TaskSubmissionFormProps } from "@/types";
+import api from "../../api";
 
 export const TaskSubmissionForm = ({
   isSubmitted,
@@ -28,17 +18,13 @@ export const TaskSubmissionForm = ({
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [submission, setSubmission] = useState<TaskSubmission>({
-    url: "",
-    githubUrl: "",
-    description: "",
-  });
-
-  useEffect(() => {
-    if (initialSubmission) {
-      setSubmission(initialSubmission);
-    }
-  }, [initialSubmission]);
+  const [submission, setSubmission] = useState<TaskSubmission>(() => ({
+    _id: initialSubmission?._id || "",
+    liveUrl: initialSubmission?.liveUrl || "",
+    gitUrl: initialSubmission?.gitUrl || "",
+    beschrijving: initialSubmission?.beschrijving || "",
+    bijlagen: initialSubmission?.bijlagen || [],
+  }));
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
@@ -78,15 +64,15 @@ export const TaskSubmissionForm = ({
   };
 
   const validateSubmission = () => {
-    if (!submission.url.trim()) {
+    if (!submission.liveUrl.trim()) {
       toast.error("URL is verplicht");
       return false;
     }
-    if (!submission.githubUrl.trim()) {
+    if (!submission.gitUrl.trim()) {
       toast.error("GitHub URL is verplicht");
       return false;
     }
-    if (!submission.description.trim()) {
+    if (!submission.beschrijving.trim()) {
       toast.error("Beschrijving is verplicht");
       return false;
     }
@@ -104,26 +90,18 @@ export const TaskSubmissionForm = ({
     setSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append("git", submission.githubUrl);
-      formData.append("live", submission.url);
-      formData.append("beschrijving", submission.description);
+      formData.append("git", submission.gitUrl);
+      formData.append("live", submission.liveUrl);
+      formData.append("beschrijving", submission.beschrijving);
       files.forEach((file) => {
         formData.append("bijlagen", file);
       });
 
-      const response = await fetch(
-        `http://localhost:3000/api/taken/${taakId}/inzendingen`,
-        {
-          method: "POST",
-          credentials: "include",
-          body: formData,
+      await api.post(`/taken/${taakId}/inzendingen`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to submit task");
-      }
+      });
 
       toast.success("Taak succesvol ingeleverd!");
       window.location.reload(); // Refresh to show updated submission status
@@ -144,9 +122,9 @@ export const TaskSubmissionForm = ({
           <Input
             id="url"
             placeholder="Voer een URL in"
-            value={submission.url}
+            value={submission.liveUrl}
             onChange={(e) =>
-              setSubmission((prev) => ({ ...prev, url: e.target.value }))
+              setSubmission((prev) => ({ ...prev, liveUrl: e.target.value }))
             }
             disabled={isSubmitted}
             required
@@ -158,12 +136,9 @@ export const TaskSubmissionForm = ({
           <Input
             id="github"
             placeholder="Voer een GitHub URL in"
-            value={submission.githubUrl}
+            value={submission.gitUrl}
             onChange={(e) =>
-              setSubmission((prev) => ({
-                ...prev,
-                githubUrl: e.target.value,
-              }))
+              setSubmission((prev) => ({ ...prev, gitUrl: e.target.value }))
             }
             disabled={isSubmitted}
             required
@@ -175,11 +150,11 @@ export const TaskSubmissionForm = ({
           <Textarea
             placeholder="Voeg extra context toe aan je inzending"
             className="mt-2"
-            value={submission.description}
+            value={submission.beschrijving}
             onChange={(e) =>
               setSubmission((prev) => ({
                 ...prev,
-                description: e.target.value,
+                beschrijving: e.target.value,
               }))
             }
             disabled={isSubmitted}

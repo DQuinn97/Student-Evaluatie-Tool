@@ -5,14 +5,8 @@ import { Link } from "react-router";
 import { Separator } from "./ui/separator";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-
-interface ProfileData {
-  naam: string;
-  achternaam: string;
-  gsm: string;
-  foto: string;
-  email: string;
-}
+import { ProfileData } from "../types";
+import api from "../api";
 
 const Profile = () => {
   const [formData, setFormData] = useState<ProfileData>({
@@ -29,22 +23,14 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/profiel", {
-        credentials: "include",
+      const { data } = await api.get("/profiel");
+      setFormData({
+        naam: data.naam || "",
+        achternaam: data.achternaam || "",
+        gsm: data.gsm || "",
+        foto: data.foto || "https://placehold.co/250x250",
+        email: data.email || "",
       });
-      const data = await response.json();
-
-      if (response.ok) {
-        setFormData({
-          naam: data.naam || "",
-          achternaam: data.achternaam || "",
-          gsm: data.gsm || "",
-          foto: data.foto || "https://placehold.co/250x250",
-          email: data.email || "",
-        });
-      } else {
-        toast.error(data.message || "Kon profiel niet laden");
-      }
     } catch (error) {
       toast.error("Er ging iets mis bij het laden van je profiel");
     }
@@ -64,20 +50,11 @@ const Profile = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/profiel/data", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          naam: formData.naam,
-          achternaam: formData.achternaam,
-          gsm: formData.gsm,
-        }),
+      await api.post("/profiel/data", {
+        naam: formData.naam,
+        achternaam: formData.achternaam,
+        gsm: formData.gsm,
       });
-
-      if (!response.ok) {
-        throw new Error("Kon profiel niet updaten");
-      }
 
       // Only upload new image if it's a base64 string
       if (formData.foto.startsWith("data:")) {
@@ -86,18 +63,11 @@ const Profile = () => {
         const blob = await base64Response.blob();
         imageFormData.append("foto", blob, "profile.jpg");
 
-        const imageResponse = await fetch(
-          "http://localhost:3000/api/profiel/foto",
-          {
-            method: "POST",
-            credentials: "include",
-            body: imageFormData,
+        await api.post("/profiel/foto", imageFormData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
           },
-        );
-
-        if (!imageResponse.ok) {
-          throw new Error("Kon foto niet uploaden");
-        }
+        });
       }
 
       toast.success("Profiel succesvol geüpdate");

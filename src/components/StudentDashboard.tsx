@@ -6,6 +6,7 @@ import { DashboardCards } from "./dashboard/DashboardCards";
 import { DataTable } from "./shared/DataTable";
 import { FilterSection } from "./dashboard/FilterSection";
 import { PerformanceChart } from "./dashboard/PerformanceChart";
+import api from "../api";
 
 const chartConfig = {
   name: {
@@ -35,21 +36,21 @@ const StudentDashboard = () => {
   const [userData, setUserData] = useState<any>(null);
 
   useEffect(() => {
-    // Fetch user data
-    fetch("http://localhost:3000/api/profiel", {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => setUserData(data))
-      .catch((err) => console.error("Error fetching user data:", err));
+    const fetchData = async () => {
+      try {
+        // Fetch user data
+        const { data: user } = await api.get("/profiel");
+        setUserData(user);
 
-    // Fetch tasks data
-    fetch("http://localhost:3000/api/taken", {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => setTasks(data))
-      .catch((err) => console.error("Error fetching tasks:", err));
+        // Fetch tasks data
+        const { data: tasksData } = await api.get("/taken");
+        setTasks(tasksData);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // Memoize the sorted table data
@@ -151,4 +152,5 @@ const StudentDashboard = () => {
     </div>
   );
 };
+
 export default StudentDashboard;

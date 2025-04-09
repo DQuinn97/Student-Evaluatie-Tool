@@ -8,6 +8,7 @@ import { Form } from "@/components/ui/form";
 import { z } from "zod";
 import { FormSchema, FormFields } from "./stagedagboek/FormFields";
 import { FileUpload } from "./stagedagboek/FileUpload";
+import api from "../api";
 
 const StudentStagedagboekIngave = () => {
   const { id } = useParams();
@@ -29,14 +30,7 @@ const StudentStagedagboekIngave = () => {
     const fetchDag = async () => {
       if (id) {
         try {
-          const response = await fetch(
-            `http://localhost:3000/api/dagboek/dag/${id}`,
-            {
-              credentials: "include",
-            },
-          );
-          if (!response.ok) throw new Error("Failed to fetch day entry");
-          const data = await response.json();
+          const { data } = await api.get(`/dagboek/dag/${id}`);
 
           form.reset({
             date: new Date(data.datum),
@@ -57,10 +51,8 @@ const StudentStagedagboekIngave = () => {
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
-      const url = id
-        ? `http://localhost:3000/api/dagboek/dag/${id}`
-        : "http://localhost:3000/api/dagboek/dag/nieuw";
-      const method = id ? "PATCH" : "POST";
+      const endpoint = id ? `/dagboek/dag/${id}` : "/dagboek/dag/nieuw";
+      const method = id ? "patch" : "post";
 
       // If there are files, use FormData
       if (files.length > 0) {
@@ -75,37 +67,27 @@ const StudentStagedagboekIngave = () => {
           formData.append("bijlagen", file);
         });
 
-        const response = await fetch(url, {
+        await api({
           method,
-          credentials: "include",
-          body: formData,
+          url: endpoint,
+          data: formData,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to save day entry");
-        }
       } else {
         // If no files, send JSON directly
-        const response = await fetch(url, {
+        await api({
           method,
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+          url: endpoint,
+          data: {
             datum: data.date.toISOString(),
             voormiddag: data.voormiddag || "",
             namiddag: data.namiddag || "",
             tools: data.tools || "",
             resultaat: data.result || "",
-          }),
+          },
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to save day entry");
-        }
       }
 
       toast.success(

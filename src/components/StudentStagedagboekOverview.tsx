@@ -4,15 +4,8 @@ import { Button } from "./ui/button";
 import { Edit, Plus, Trash2, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
-
-interface Entry {
-  _id: string;
-  datum: string;
-  voormiddag: string;
-  namiddag: string;
-  tools: string;
-  resultaat: string;
-}
+import { Entry } from "../types";
+import api from "../api";
 
 const StudentStagedagboekOverview = () => {
   const navigate = useNavigate();
@@ -22,18 +15,10 @@ const StudentStagedagboekOverview = () => {
     const fetchDagboek = async () => {
       try {
         // First get the user's dagboek
-        const response = await fetch("/api/profiel", {
-          credentials: "include",
-        });
-        if (!response.ok) throw new Error("Failed to fetch profile");
-        const user = await response.json();
+        const { data: user } = await api.get("/profiel");
 
         // Then get the dagboek details
-        const dagboekResponse = await fetch(`/api/dagboek/${user.dagboek}`, {
-          credentials: "include",
-        });
-        if (!dagboekResponse.ok) throw new Error("Failed to fetch dagboek");
-        const dagboek = await dagboekResponse.json();
+        const { data: dagboek } = await api.get(`/dagboek/${user.dagboek}`);
 
         setEntries(dagboek.stagedagen || []);
       } catch (error) {
@@ -51,18 +36,12 @@ const StudentStagedagboekOverview = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/dagboek/dag/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const response = await api.delete(`/dagboek/dag/${id}`);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete entry");
+      if (response.status === 200) {
+        setEntries(entries.filter((entry) => entry._id !== id));
+        toast.success("Entry deleted successfully");
       }
-
-      setEntries(entries.filter((entry) => entry._id !== id));
-      toast.success("Entry deleted successfully");
     } catch (error) {
       toast.error((error as Error).message);
     }

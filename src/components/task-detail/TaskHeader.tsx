@@ -1,10 +1,5 @@
 import { Badge } from "../ui/badge";
-
-interface TaskHeaderProps {
-  lecture: string;
-  klas: string;
-  type: string;
-}
+import { TaskHeaderProps } from "@/types";
 
 export const TaskHeader = ({ lecture, klas, type }: TaskHeaderProps) => {
   return (

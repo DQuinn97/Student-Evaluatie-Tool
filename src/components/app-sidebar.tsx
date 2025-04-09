@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router";
-import { navigation, NavItem } from "@/config/navigation";
+import { navigation } from "@/config/navigation";
+import { NavItem } from "@/types";
 
 function NavLink({ item }: { item: NavItem }) {
   const location = useLocation();

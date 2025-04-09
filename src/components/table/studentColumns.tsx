@@ -1,6 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Student } from "@/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +12,7 @@ import {
 import { Ellipsis } from "lucide-react";
 import { Link } from "react-router";
 
-export const studentColumns: ColumnDef<any>[] = [
+export const studentColumns: ColumnDef<Student>[] = [
   {
     accessorKey: "lecture",
     header: "Taken",

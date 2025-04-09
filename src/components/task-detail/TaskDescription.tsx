@@ -1,11 +1,4 @@
-interface TaskDescriptionProps {
-  id: string;
-  klas: string;
-  type: string;
-  beschrijving: string;
-  deadline: string;
-  maxScore: number;
-}
+import { TaskDescriptionProps } from "@/types";
 
 export const TaskDescription = ({ beschrijving }: TaskDescriptionProps) => {
   return (

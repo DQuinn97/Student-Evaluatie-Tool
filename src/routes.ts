@@ -1,12 +1,7 @@
 import { Children, isValidElement, ReactElement, ReactNode } from "react";
 import { Route, Routes, RouteProps } from "react-router";
 
-export interface RouteConfig {
-  path: string;
-  label: string;
-  element?: ReactNode;
-  children?: RouteConfig[];
-}
+import { RouteConfig } from "./types";
 
 export const routes: RouteConfig[] = [
   {

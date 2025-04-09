@@ -8,11 +8,7 @@ import {
   type Table,
 } from "@tanstack/react-table";
 
-interface UseTableConfigProps<TData> {
-  data: TData[];
-  columns: any[];
-  pageSize?: number;
-}
+import { UseTableConfigProps } from "@/types";
 
 export function useTableConfig<TData>({
   data,

@@ -8,47 +8,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-
-interface TaskSubmission {
-  url: string;
-  githubUrl: string;
-  description: string;
-  files?: string[];
-}
-
-interface Task {
-  _id: string;
-  type: string;
-  titel: string;
-  beschrijving: string;
-  deadline: string;
-  weging: number;
-  isGepubliceerd: boolean;
-  klasgroep: {
-    _id: string;
-    naam: string;
-  };
-  vak?: {
-    _id: string;
-    naam: string;
-  };
-  inzendingen: Array<{
-    _id: string;
-    git: string;
-    live: string;
-    beschrijving: string;
-    bijlagen: string[];
-    gradering?: Array<{
-      feedback: string;
-      score: number;
-    }>;
-  }>;
-  bijlagen: string[];
-}
+import { TaskSubmission, TaskDetail as ITaskDetail } from "../types";
+import api from "../api";
 
 export const TaskDetail = () => {
   const { taakId } = useParams<{ taakId: string }>();
-  const [task, setTask] = useState<Task | null>(null);
+  const [task, setTask] = useState<ITaskDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,28 +27,7 @@ export const TaskDetail = () => {
         setIsLoading(true);
         setError(null);
 
-        const taskResponse = await fetch(
-          `http://localhost:3000/api/taken/${taakId}`,
-          {
-            method: "GET",
-            credentials: "include",
-            headers: {
-              Accept: "application/json",
-              "Cache-Control": "no-cache",
-            },
-          },
-        );
-
-        if (!taskResponse.ok) {
-          if (taskResponse.status === 404) {
-            throw new Error("Taak niet gevonden");
-          }
-          throw new Error(
-            "Er is een fout opgetreden bij het ophalen van de taak",
-          );
-        }
-
-        const taskData = await taskResponse.json();
+        const { data: taskData } = await api.get(`/taken/${taakId}`);
         setTask(taskData);
       } catch (err) {
         if (err instanceof Error) {
@@ -139,14 +83,13 @@ export const TaskDetail = () => {
 
   const studentInzending = task.inzendingen[0];
   const isSubmitted = Boolean(studentInzending);
-  const submission: TaskSubmission | undefined = studentInzending
-    ? {
-        url: studentInzending.live,
-        githubUrl: studentInzending.git,
-        description: studentInzending.beschrijving,
-        files: studentInzending.bijlagen,
-      }
-    : undefined;
+  const submission: TaskSubmission | undefined = studentInzending && {
+    _id: studentInzending._id,
+    liveUrl: studentInzending.liveUrl,
+    gitUrl: studentInzending.gitUrl,
+    beschrijving: studentInzending.beschrijving,
+    bijlagen: studentInzending.bijlagen,
+  };
 
   const feedback = studentInzending?.gradering?.[0]?.feedback;
   const gottenPoints = studentInzending?.gradering?.[0]?.score ?? 0;
@@ -180,7 +123,7 @@ export const TaskDetail = () => {
       <TaskSubmissionForm
         isSubmitted={isSubmitted}
         initialSubmission={submission}
-        submittedFiles={submission?.files}
+        submittedFiles={submission?.bijlagen}
       />
 
       {feedback && <TaskFeedback feedback={feedback} />}

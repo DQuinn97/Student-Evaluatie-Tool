@@ -1,4 +1,3 @@
-import { Table as ReactTable } from "@tanstack/react-table";
 import { Input } from "../ui/input";
 import {
   Table,
@@ -20,20 +19,12 @@ import {
 } from "../ui/select";
 import { useCallback, useMemo, useState } from "react";
 import debounce from "lodash/debounce";
-
-interface DataTableProps {
-  table: ReactTable<any>;
-  filterColumn?: string;
-  filterPlaceholder?: string;
-  showRowSelection?: boolean;
-  emptyMessage?: string;
-}
+import { DataTableProps } from "@/types";
 
 export const DataTable = ({
   table,
   filterColumn = "name",
   filterPlaceholder = "Filter...",
-  showRowSelection = false,
   emptyMessage = "No data found.",
 }: DataTableProps) => {
   const [filterValue, setFilterValue] = useState("");

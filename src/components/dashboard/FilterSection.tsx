@@ -7,15 +7,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { RotateCcw } from "lucide-react";
-import { Task } from "../../types";
-
-interface FilterSectionProps {
-  klas: string | null;
-  setKlas: (value: string | null) => void;
-  type: string | null;
-  setType: (value: string | null) => void;
-  tasks: Task[];
-}
+import { FilterSectionProps } from "@/types";
 
 export const FilterSection = ({
   klas,

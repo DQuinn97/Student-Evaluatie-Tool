@@ -1,8 +1,4 @@
-export interface NavItem {
-  label: string;
-  path: string;
-  children?: NavItem[];
-}
+import { NavItem } from "@/types";
 
 export const navigation: NavItem[] = [
   {
