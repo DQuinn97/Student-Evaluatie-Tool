@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Copy, Trash, Edit } from "lucide-react";
+import { Plus, Copy, Trash, Eye } from "lucide-react";
 import { DataTable } from "../shared/DataTable";
 import { useTableConfig } from "@/hooks/useTableConfig";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -103,6 +103,7 @@ export const ClassManagement = () => {
     {
       accessorKey: "titel",
       header: "Titel",
+      cell: ({ row }: { row: Row<Task> }) => row.original.titel,
     },
     {
       accessorKey: "type",
@@ -144,9 +145,9 @@ export const ClassManagement = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/docent/taken/${task._id}/edit`)}
+              onClick={() => navigate(`/docent/taken/${task._id}`)}
             >
-              <Edit className="h-4 w-4" />
+              <Eye className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"

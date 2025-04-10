@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileIcon, Loader2, Trash2Icon, Upload } from "lucide-react";
+import { FileIcon, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -13,7 +13,8 @@ export const TaskSubmissionForm = ({
   isSubmitted,
   initialSubmission,
   submittedFiles,
-}: TaskSubmissionFormProps) => {
+  isDocent = false,
+}: TaskSubmissionFormProps & { isDocent?: boolean }) => {
   const { taakId } = useParams<{ taakId: string }>();
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -26,99 +27,49 @@ export const TaskSubmissionForm = ({
     bijlagen: initialSubmission?.bijlagen || [],
   }));
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-    setUploading(true);
-
-    try {
-      const newFiles = Array.from(e.target.files);
-      const uniqueFiles = newFiles.filter(
-        (newFile) =>
-          !files.some((existingFile) => existingFile.name === newFile.name) &&
-          !submittedFiles?.some(
-            (submittedFile) => submittedFile === newFile.name,
-          ),
-      );
-
-      if (uniqueFiles.length === 0) {
-        toast.error("Deze bestanden zijn al geüpload");
-        return;
-      }
-
-      // Here you would typically upload the files to your server
-      // For now, we'll simulate the upload with a delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setFiles([...files, ...uniqueFiles]);
-      toast.success(`${uniqueFiles.length} bestand(en) geüpload!`);
-    } catch (error) {
-      toast.error("Error bij uploaden");
-      console.error("Upload error:", error);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleFileDelete = (fileIndex: number) => {
-    setFiles(files.filter((_, index) => index !== fileIndex));
-    toast.success("Bestand verwijderd");
-  };
-
-  const validateSubmission = () => {
-    if (!submission.liveUrl.trim()) {
-      toast.error("URL is verplicht");
-      return false;
-    }
-    if (!submission.gitUrl.trim()) {
-      toast.error("GitHub URL is verplicht");
-      return false;
-    }
-    if (!submission.beschrijving.trim()) {
-      toast.error("Beschrijving is verplicht");
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!taakId) return;
+    if (!isSubmitted && !isDocent) {
+      try {
+        setSubmitting(true);
 
-    if (!validateSubmission()) {
-      return;
+        // First upload files if any
+        if (files.length > 0) {
+          setUploading(true);
+          const formData = new FormData();
+          files.forEach((file) => {
+            formData.append("bijlagen", file);
+          });
+
+          // Upload files first
+          const { data: uploadedFiles } = await api.post("/upload", formData);
+          submission.bijlagen = uploadedFiles;
+          setUploading(false);
+        }
+
+        // Then submit the task
+        await api.post(`/taken/${taakId}/inzendingen`, submission);
+        toast.success("Taak succesvol ingeleverd!");
+        window.location.reload();
+      } catch (error) {
+        console.error("Error submitting task:", error);
+        toast.error("Er is een fout opgetreden bij het inleveren van de taak");
+      } finally {
+        setSubmitting(false);
+        setUploading(false);
+      }
     }
+  };
 
-    setSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append("git", submission.gitUrl);
-      formData.append("live", submission.liveUrl);
-      formData.append("beschrijving", submission.beschrijving);
-      files.forEach((file) => {
-        formData.append("bijlagen", file);
-      });
-
-      await api.post(`/taken/${taakId}/inzendingen`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      toast.success("Taak succesvol ingeleverd!");
-      window.location.reload(); // Refresh to show updated submission status
-    } catch (error) {
-      toast.error("Error bij inleveren van de taak");
-      console.error("Submission error:", error);
-    } finally {
-      setSubmitting(false);
-    }
+  const handleFileDelete = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8">
-      <h2 className="mb-4 text-xl font-semibold">Upload bestanden</h2>
-      <div className="grid gap-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <Label htmlFor="url">URL *</Label>
+          <Label htmlFor="url">URL</Label>
           <Input
             id="url"
             placeholder="Voer een URL in"
@@ -126,13 +77,13 @@ export const TaskSubmissionForm = ({
             onChange={(e) =>
               setSubmission((prev) => ({ ...prev, liveUrl: e.target.value }))
             }
-            disabled={isSubmitted}
+            disabled={isSubmitted || isDocent}
             required
           />
         </div>
 
         <div>
-          <Label htmlFor="github">GitHub project URL *</Label>
+          <Label htmlFor="github">GitHub project URL</Label>
           <Input
             id="github"
             placeholder="Voer een GitHub URL in"
@@ -140,13 +91,13 @@ export const TaskSubmissionForm = ({
             onChange={(e) =>
               setSubmission((prev) => ({ ...prev, gitUrl: e.target.value }))
             }
-            disabled={isSubmitted}
+            disabled={isSubmitted || isDocent}
             required
           />
         </div>
 
         <div>
-          <Label>Beschrijving *</Label>
+          <Label>Beschrijving</Label>
           <Textarea
             placeholder="Voeg extra context toe aan je inzending"
             className="mt-2"
@@ -157,47 +108,53 @@ export const TaskSubmissionForm = ({
                 beschrijving: e.target.value,
               }))
             }
-            disabled={isSubmitted}
+            disabled={isSubmitted || isDocent}
             required
           />
         </div>
 
-        <div className="space-y-4">
-          <Label>Upload bestanden</Label>
-          <div className="grid gap-4">
-            <Input
-              type="file"
-              multiple
-              onChange={handleFileUpload}
-              disabled={isSubmitted || uploading}
-            />
-            {!isSubmitted && (
-              <Button type="submit" disabled={submitting || uploading}>
-                {submitting ? (
-                  <>
+        <div>
+          <Label>Bijlagen</Label>
+          {!isSubmitted && !isDocent && (
+            <div className="mt-2">
+              <input
+                type="file"
+                multiple
+                onChange={(e) => {
+                  if (e.target.files) {
+                    setFiles(Array.from(e.target.files));
+                  }
+                }}
+                className="hidden"
+                id="file-upload"
+              />
+              <label htmlFor="file-upload">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={uploading}
+                >
+                  {uploading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Inleveren...
-                  </>
-                ) : (
-                  <>
+                  ) : (
                     <Upload className="mr-2 h-4 w-4" />
-                    Lever in
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
+                  )}
+                  Bestanden toevoegen
+                </Button>
+              </label>
+            </div>
+          )}
 
-          {((files && files.length > 0) ||
-            (submittedFiles && submittedFiles.length > 0)) && (
-            <div className="rounded-lg border p-4">
-              <h3 className="mb-2 font-medium">Uploaded files</h3>
+          {((submittedFiles || []).length > 0 || files.length > 0) && (
+            <div className="mt-4">
+              <h3 className="mb-2 font-medium">Geüploade bestanden</h3>
               <div className="space-y-2">
                 {submittedFiles &&
                   submittedFiles.map((fileName, index) => (
                     <div
                       key={`existing-${index}`}
-                      className="text-muted-foreground flex items-center justify-between gap-2 text-sm"
+                      className="text-muted-foreground flex items-center gap-2 text-sm"
                     >
                       <FileIcon className="h-4 w-4" />
                       {fileName}
@@ -212,7 +169,7 @@ export const TaskSubmissionForm = ({
                       <FileIcon className="h-4 w-4" />
                       {file.name}
                     </div>
-                    {!isSubmitted && (
+                    {!isSubmitted && !isDocent && (
                       <Button
                         type="button"
                         variant="destructive"
@@ -220,7 +177,7 @@ export const TaskSubmissionForm = ({
                         onClick={() => handleFileDelete(index)}
                         className="h-8 px-2"
                       >
-                        <Trash2Icon className="h-4 w-4" />
+                        Verwijderen
                       </Button>
                     )}
                   </div>
@@ -230,6 +187,23 @@ export const TaskSubmissionForm = ({
           )}
         </div>
       </div>
+
+      {!isSubmitted && !isDocent && (
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={submitting || uploading}
+        >
+          {submitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Inleveren...
+            </>
+          ) : (
+            "Taak inleveren"
+          )}
+        </Button>
+      )}
     </form>
   );
 };

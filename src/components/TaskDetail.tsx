@@ -4,15 +4,19 @@ import { TaskMetrics } from "./task-detail/TaskMetrics";
 import { TaskDescription } from "./task-detail/TaskDescription";
 import { TaskSubmissionForm } from "./task-detail/TaskSubmissionForm";
 import { TaskFeedback } from "./task-detail/TaskFeedback";
+import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { TaskSubmission, TaskDetail as ITaskDetail } from "../types";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { TaskDetail as ITaskDetail } from "../types";
 import api from "../api";
 
 export const TaskDetail = () => {
-  const { taakId } = useParams<{ taakId: string }>();
+  const { id, taakId } = useParams<{ id?: string; taakId?: string }>();
+  const taskId = id || taakId;
+  const isDocent = Boolean(id);
+  const navigate = useNavigate();
   const [task, setTask] = useState<ITaskDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,14 +24,14 @@ export const TaskDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!taakId) {
+        if (!taskId) {
           throw new Error("Geen taak ID gevonden");
         }
 
         setIsLoading(true);
         setError(null);
 
-        const { data: taskData } = await api.get(`/taken/${taakId}`);
+        const { data: taskData } = await api.get(`/taken/${taskId}`);
         setTask(taskData);
       } catch (err) {
         if (err instanceof Error) {
@@ -44,7 +48,7 @@ export const TaskDetail = () => {
     };
 
     fetchData();
-  }, [taakId]);
+  }, [taskId]);
 
   if (isLoading) {
     return (
@@ -81,21 +85,45 @@ export const TaskDetail = () => {
     );
   }
 
-  const studentInzending = task.inzendingen[0];
-  const isSubmitted = Boolean(studentInzending);
-  const submission: TaskSubmission | undefined = studentInzending && {
-    _id: studentInzending._id,
-    liveUrl: studentInzending.liveUrl,
-    gitUrl: studentInzending.gitUrl,
-    beschrijving: studentInzending.beschrijving,
-    bijlagen: studentInzending.bijlagen,
-  };
+  const handleGradeSubmit = async (
+    inzendingId: string,
+    score: number,
+    feedback: string,
+  ) => {
+    try {
+      await api.post(`/inzendingen/${inzendingId}/gradering`, {
+        score,
+        maxscore: task.weging,
+        feedback,
+      });
+      toast.success("Beoordeling opgeslagen");
 
-  const feedback = studentInzending?.gradering?.[0]?.feedback;
-  const gottenPoints = studentInzending?.gradering?.[0]?.score ?? 0;
+      // Refresh task data to show new grade
+      const { data: taskData } = await api.get(`/taken/${taskId}`);
+      setTask(taskData);
+    } catch (error) {
+      console.error("Error submitting grade:", error);
+      toast.error(
+        "Er is een fout opgetreden bij het opslaan van de beoordeling",
+      );
+    }
+  };
 
   return (
     <div className="container mx-auto p-6">
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          className="mb-4"
+          onClick={() =>
+            navigate(isDocent ? "/docent/klasbeheer" : "/student/dashboard")
+          }
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Terug
+        </Button>
+      </div>
+
       <TaskHeader
         lecture={task.titel}
         klas={task.klasgroep.naam}
@@ -104,8 +132,8 @@ export const TaskDetail = () => {
 
       <TaskMetrics
         deadline={task.deadline}
-        status={isSubmitted ? "Ingeleverd" : "Open"}
-        gottenPoints={gottenPoints}
+        status={task.inzendingen.length > 0 ? "Ingeleverd" : "Open"}
+        gottenPoints={task.inzendingen[0]?.gradering?.[0]?.score ?? 0}
         totalPoints={task.weging}
       />
 
@@ -120,13 +148,76 @@ export const TaskDetail = () => {
 
       <Separator className="my-8" />
 
-      <TaskSubmissionForm
-        isSubmitted={isSubmitted}
-        initialSubmission={submission}
-        submittedFiles={submission?.bijlagen}
-      />
+      {task.inzendingen.map((submission, index) => (
+        <div key={submission._id} className="mb-8">
+          {index > 0 && <Separator className="my-8" />}
 
-      {feedback && <TaskFeedback feedback={feedback} />}
+          <div className="mb-4">
+            <h3 className="text-xl font-semibold">
+              Inzending van {submission.student?.naam}{" "}
+              {submission.student?.achternaam}
+            </h3>
+          </div>
+
+          <TaskSubmissionForm
+            isSubmitted={true}
+            initialSubmission={submission}
+            submittedFiles={submission.bijlagen}
+            isDocent={isDocent}
+          />
+
+          {isDocent && (
+            <div className="mt-4">
+              <h4 className="mb-2 text-lg font-semibold">Beoordeling</h4>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    Score (max {task.weging} punten)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max={task.weging}
+                    defaultValue={submission.gradering?.[0]?.score}
+                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    onChange={(e) => {
+                      const score = Math.min(
+                        Math.max(0, parseInt(e.target.value)),
+                        task.weging,
+                      );
+                      handleGradeSubmit(
+                        submission._id,
+                        score,
+                        submission.gradering?.[0]?.feedback || "",
+                      );
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    Feedback
+                  </label>
+                  <textarea
+                    defaultValue={submission.gradering?.[0]?.feedback}
+                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-20 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    onChange={(e) => {
+                      handleGradeSubmit(
+                        submission._id,
+                        submission.gradering?.[0]?.score || 0,
+                        e.target.value,
+                      );
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!isDocent && submission.gradering?.[0]?.feedback && (
+            <TaskFeedback feedback={submission.gradering[0].feedback} />
+          )}
+        </div>
+      ))}
     </div>
   );
 };

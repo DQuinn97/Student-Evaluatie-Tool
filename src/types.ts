@@ -50,7 +50,14 @@ export interface TaskDetail {
     _id: string;
     naam: string;
   };
-  inzendingen: TaskSubmission[];
+  inzendingen: Array<
+    TaskSubmission & {
+      student?: {
+        naam: string;
+        achternaam: string;
+      };
+    }
+  >;
 }
 
 export interface TaskSubmission {
@@ -62,6 +69,7 @@ export interface TaskSubmission {
   gradering?: Array<{
     feedback: string;
     score: number;
+    maxscore: number;
   }>;
 }
 
@@ -69,6 +77,7 @@ export interface TaskSubmissionFormProps {
   isSubmitted: boolean;
   initialSubmission?: TaskSubmission;
   submittedFiles?: string[];
+  isDocent?: boolean;
 }
 
 export interface Entry {

@@ -11,6 +11,7 @@ import DocentDashboard from "./components/DocentDashboard";
 import { TaskDetail } from "./components/TaskDetail";
 import StudentStagedagboekOverview from "./components/StudentStagedagboekOverview";
 import Sidebar from "./app/sidebar/page";
+import { ClassManagement } from "./components/docent/ClassManagement";
 
 function App() {
   return (
@@ -44,6 +45,11 @@ function App() {
                 />
                 <Route path="/docent/dashboard" element={<DocentDashboard />} />
                 <Route path="/student/taken/:taakId" element={<TaskDetail />} />
+                <Route path="/docent/taken/:id" element={<TaskDetail />} />
+                <Route
+                  path="/docent/klasbeheer"
+                  element={<ClassManagement />}
+                />
               </Routes>
             </Sidebar>
           }
