@@ -20,14 +20,29 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
   useEffect(() => {
     const fetchClassAverage = async () => {
       try {
+        // Only fetch class averages for tasks that have been graded
+        const gradedTaskIds = tasks
+          .filter(
+            (task) => task.status === "Ingeleverd" && task.gottenPoints > 0,
+          )
+          .map((task) => task.taakId);
+
         const averages = await Promise.all(
-          tasks.map((task) =>
+          gradedTaskIds.map((taskId) =>
             api
-              .get(`/taken/${task.taakId}/score`)
+              .get(`/taken/${taskId}/score`)
               .then(({ data }) => data)
-              .catch(() => null),
+              .catch((error) => {
+                if (error.response?.status === 403) {
+                  // Skip tasks where user doesn't have access to class average
+                  return null;
+                }
+                console.error("Error fetching task score:", error);
+                return null;
+              }),
           ),
         );
+
         const validAverages = averages.filter((avg) => avg !== null);
         if (validAverages.length > 0) {
           setClassAverage(

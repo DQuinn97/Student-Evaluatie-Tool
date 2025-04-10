@@ -34,6 +34,7 @@ const StudentDashboard = () => {
   const [type, setType] = useState<string | null>("alle");
   const [tasks, setTasks] = useState<any[]>([]);
   const [userData, setUserData] = useState<any>(null);
+  const [userClass, setUserClass] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,9 +43,19 @@ const StudentDashboard = () => {
         const { data: user } = await api.get("/profiel");
         setUserData(user);
 
-        // Fetch tasks data
-        const { data: tasksData } = await api.get("/taken");
-        setTasks(tasksData);
+        // Fetch user's class information - for students this will only return their class
+        const { data: classes } = await api.get("/klassen");
+        if (classes && classes.length > 0) {
+          // Since students only get their own class, we can use the first one
+          const userClass = classes[0];
+          setUserClass(userClass);
+
+          // Fetch tasks for user's class
+          const { data: tasksData } = await api.get(
+            `/klassen/${userClass._id}/taken`,
+          );
+          setTasks(tasksData);
+        }
       } catch (err) {
         console.error("Error fetching data:", err);
       }
