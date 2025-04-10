@@ -9,6 +9,24 @@ import { nl } from "date-fns/locale";
 import { useNavigate } from "react-router";
 import api from "@/api";
 import { Row } from "@tanstack/react-table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type Task = {
   _id: string;
@@ -29,9 +47,18 @@ type Task = {
   };
 };
 
+type Student = {
+  _id: string;
+  naam: string;
+  achternaam: string;
+  email: string;
+  foto?: string;
+};
+
 type Class = {
   _id: string;
   naam: string;
+  studenten?: Student[];
 };
 
 export const ClassManagement = () => {
@@ -39,8 +66,13 @@ export const ClassManagement = () => {
   const [classes, setClasses] = useState<Class[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{
+    type: "task" | "student";
+    id: string;
+  } | null>(null);
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -82,6 +114,55 @@ export const ClassManagement = () => {
 
     fetchTasks();
   }, [selectedClass]);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      if (!selectedClass) {
+        setStudents([]);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        const { data } = await api.get(`/klassen/${selectedClass}`);
+        setStudents(data.studenten || []);
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        setError("Er is een fout opgetreden bij het ophalen van de studenten");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, [selectedClass]);
+
+  const handleDeleteConfirmed = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      if (itemToDelete.type === "task") {
+        await api.delete(`/taken/${itemToDelete.id}`);
+        setTasks(tasks.filter((task) => task._id !== itemToDelete.id));
+      } else {
+        if (!selectedClass) return;
+        await api.patch(`/klassen/${selectedClass}/studenten`, {
+          studentId: itemToDelete.id,
+        });
+        setStudents(
+          students.filter((student) => student._id !== itemToDelete.id),
+        );
+      }
+    } catch (error) {
+      console.error(`Error deleting ${itemToDelete.type}:`, error);
+      alert(
+        `Er is een fout opgetreden bij het verwijderen van de ${itemToDelete.type === "task" ? "taak" : "student"}`,
+      );
+    } finally {
+      setItemToDelete(null);
+    }
+  };
 
   const calculateAverageScore = (task: Task) => {
     const gradedSubmissions = task.inzendingen.filter(
@@ -156,13 +237,93 @@ export const ClassManagement = () => {
             >
               <Copy className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleDeleteTask(task._id)}
-            >
-              <Trash className="h-4 w-4" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Bevestig Verwijderen</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Weet je zeker dat je deze taak wilt verwijderen?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuleren</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDeleteConfirmed()}>
+                    Verwijderen
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        );
+      },
+    },
+  ];
+
+  const studentColumns = [
+    {
+      accessorKey: "naam",
+      header: "Naam",
+      cell: ({ row }: { row: Row<Student> }) => {
+        const student = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar>
+              <AvatarImage src={student.foto} />
+              <AvatarFallback>
+                {student.naam?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="font-medium">
+                {student.naam} {student.achternaam}
+              </div>
+              <div className="text-muted-foreground text-sm">
+                {student.email}
+              </div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }: { row: Row<Student> }) => {
+        const student = row.original;
+        return (
+          <div className="flex gap-2">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setItemToDelete({ type: "student", id: student._id })
+                  }
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Bevestig Verwijderen</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Weet je zeker dat je deze student wilt verwijderen uit de
+                    klas?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Annuleren</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDeleteConfirmed()}>
+                    Verwijderen
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         );
       },
@@ -172,6 +333,12 @@ export const ClassManagement = () => {
   const table = useTableConfig({
     data: tasks,
     columns: taskColumns,
+    pageSize: 10,
+  });
+
+  const studentTable = useTableConfig({
+    data: students,
+    columns: studentColumns,
     pageSize: 10,
   });
 
@@ -217,13 +384,25 @@ export const ClassManagement = () => {
     }
   };
 
-  const handleDeleteTask = async (taskId: string) => {
-    if (confirm("Weet je zeker dat je deze taak wilt verwijderen?")) {
+  const handleAddStudent = async () => {
+    if (!selectedClass) {
+      alert("Selecteer eerst een klas");
+      return;
+    }
+    const studentEmail = prompt("Voer het e-mailadres van de student in:");
+    if (studentEmail) {
       try {
-        await api.delete(`/taken/${taskId}`);
-        setTasks(tasks.filter((task) => task._id !== taskId));
+        await api.post(`/klassen/${selectedClass}/studenten`, {
+          studentId: studentEmail,
+        });
+        // Refresh students list
+        const { data: updatedClass } = await api.get(
+          `/klassen/${selectedClass}`,
+        );
+        setStudents(updatedClass.studenten || []);
       } catch (error) {
-        console.error("Error deleting task:", error);
+        console.error("Error adding student:", error);
+        alert("Er is een fout opgetreden bij het toevoegen van de student");
       }
     }
   };
@@ -273,31 +452,67 @@ export const ClassManagement = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Taken & Toetsen</CardTitle>
-            <Button
-              onClick={handleCreateTask}
-              disabled={!selectedClass || isLoading}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Nieuwe Taak
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-muted-foreground">Laden...</div>
-            ) : (
-              <DataTable
-                table={table}
-                filterColumn="titel"
-                filterPlaceholder="Zoek taken..."
-                showRowSelection={false}
-                emptyMessage="Geen taken gevonden."
-              />
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="tasks">
+              <div className="flex items-center justify-between border-b">
+                <AccordionTrigger className="flex-1 hover:no-underline">
+                  <h3 className="text-xl font-semibold">Taken & Toetsen</h3>
+                </AccordionTrigger>
+                <Button
+                  onClick={handleCreateTask}
+                  disabled={!selectedClass || isLoading}
+                  className="m-2"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nieuwe Taak
+                </Button>
+              </div>
+              <AccordionContent>
+                {isLoading ? (
+                  <div className="text-muted-foreground">Laden...</div>
+                ) : (
+                  <DataTable
+                    table={table}
+                    filterColumn="titel"
+                    filterPlaceholder="Zoek taken..."
+                    showRowSelection={false}
+                    emptyMessage="Geen taken gevonden."
+                  />
+                )}
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="students">
+              <div className="flex items-center justify-between border-b">
+                <AccordionTrigger className="flex-1 hover:no-underline">
+                  <h3 className="text-xl font-semibold">Studenten</h3>
+                </AccordionTrigger>
+                <Button
+                  onClick={handleAddStudent}
+                  disabled={!selectedClass || isLoading}
+                  className="m-2"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Student Toevoegen
+                </Button>
+              </div>
+              <AccordionContent>
+                {isLoading ? (
+                  <div className="text-muted-foreground">Laden...</div>
+                ) : (
+                  <DataTable
+                    table={studentTable}
+                    filterColumn="naam"
+                    filterPlaceholder="Zoek studenten..."
+                    showRowSelection={false}
+                    emptyMessage="Geen studenten gevonden."
+                  />
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
       </div>
     </div>
   );

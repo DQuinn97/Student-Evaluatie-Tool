@@ -6,20 +6,62 @@ import { DataTable } from "../shared/DataTable";
 import { FilterSection } from "../dashboard/FilterSection";
 import { PerformanceChart } from "../dashboard/PerformanceChart";
 import { useTableConfig } from "@/hooks/useTableConfig";
-import { studentColumns } from "@/components/table/studentColumns";
 import { ChartConfig } from "@/components/ui/chart";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
+import { ColumnDef, Row } from "@tanstack/react-table";
 
 const chartConfig = {
   points: { label: "Score" },
 } satisfies ChartConfig;
 
+type Task = {
+  _id: string;
+  titel: string;
+  type: string;
+  deadline: string;
+  inzendingen: Array<{
+    _id: string;
+    gradering: Array<{
+      score: number;
+      maxscore: number;
+      feedback?: string;
+    }>;
+  }>;
+};
+
 type ClassViewProps = {
   classData: {
     _id: string;
     naam: string;
-    taken: any[];
+    taken: Task[];
   };
 };
+
+const taskColumns: ColumnDef<Task>[] = [
+  {
+    accessorKey: "titel",
+    header: "Titel",
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
+  },
+  {
+    accessorKey: "deadline",
+    header: "Deadline",
+    cell: ({ row }: { row: Row<Task> }) => {
+      const deadline = row.getValue("deadline");
+      return (
+        <div>
+          {format(new Date(deadline as string), "d MMMM yyyy HH:mm", {
+            locale: nl,
+          })}
+        </div>
+      );
+    },
+  },
+];
 
 export const AccordionClassView = ({ classData }: ClassViewProps) => {
   const [type, setType] = useState<string | null>("alle");
@@ -29,21 +71,34 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
       (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
     )
     .map((task) => {
-      const hasGradering = task.inzendingen?.[0]?.gradering?.length > 0;
       const graderingData = task.inzendingen?.[0]?.gradering?.[0];
       return {
-        taakId: task._id,
+        _id: task._id,
+        taakId: task._id, // Use the full MongoDB ObjectId
+        titel: task.titel,
         lecture: task.titel,
-        hasGradering,
-        gottenPoints: graderingData?.score ?? 0,
-        totalPoints: graderingData ? graderingData.maxscore : task.weging,
         type: task.type,
         deadline: task.deadline,
+        inzendingen: task.inzendingen,
         status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
-        feedback: graderingData?.feedback || "",
+        gottenPoints: graderingData?.score ?? 0,
+        totalPoints: graderingData ? graderingData.maxscore : 0,
         klas: classData.naam,
+        feedback: graderingData?.feedback || "",
       };
     });
+
+  const filterSectionTasks = tableData.map((task) => ({
+    taakId: task._id,
+    lecture: task.titel,
+    klas: task.klas,
+    type: task.type,
+    deadline: task.deadline,
+    status: task.status,
+    feedback: task.feedback,
+    totalPoints: task.totalPoints,
+    gottenPoints: task.gottenPoints,
+  }));
 
   const filteredData = tableData.filter(
     (task) => type === "alle" || task.type === type,
@@ -56,7 +111,7 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
     .map((task) => {
       const hasGradering = task.inzendingen?.[0]?.gradering?.[0];
       const score = hasGradering?.score ?? 0;
-      const maxScore = hasGradering ? hasGradering.maxscore : task.weging;
+      const maxScore = hasGradering ? hasGradering.maxscore : 0;
 
       if (!hasGradering) return null;
 
@@ -74,7 +129,7 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
 
   const table = useTableConfig({
     data: filteredData,
-    columns: studentColumns(true),
+    columns: taskColumns,
     pageSize: 5,
   });
 
@@ -94,9 +149,9 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
             <h2 className="mb-4 text-xl font-semibold">Overzicht taken</h2>
             <DataTable
               table={table}
-              filterColumn="lecture"
+              filterColumn="titel"
               filterPlaceholder="Filter taken..."
-              showRowSelection={true}
+              showRowSelection={false}
               emptyMessage="Geen taken gevonden."
             />
           </div>
@@ -104,7 +159,7 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
           <FilterSection
             type={type}
             setType={setType}
-            tasks={tableData}
+            tasks={filterSectionTasks}
             isDocent={true}
             klas={classData.naam}
             setKlas={() => {}}

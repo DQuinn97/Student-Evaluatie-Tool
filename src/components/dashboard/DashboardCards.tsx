@@ -4,10 +4,24 @@ import api from "@/api";
 import { useEffect, useState } from "react";
 
 interface Task {
+  _id: string;
+  taakId: string;
+  titel: string;
+  lecture: string;
+  type: string;
+  deadline: string;
+  inzendingen?: Array<{
+    gradering?: Array<{
+      score: number;
+      maxscore: number;
+      feedback?: string;
+    }>;
+  }>;
+  status: string;
   gottenPoints: number;
   totalPoints: number;
-  status: string;
-  taakId: number;
+  klas: string;
+  feedback?: string;
 }
 
 interface DashboardCardsProps {
@@ -16,6 +30,7 @@ interface DashboardCardsProps {
 
 export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
   const [classAverage, setClassAverage] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchClassAverage = async () => {
@@ -25,22 +40,50 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
           .filter(
             (task) => task.status === "Ingeleverd" && task.gottenPoints > 0,
           )
-          .map((task) => task.taakId);
+          .map((task) => task.taakId)
+          .filter((id) => {
+            // Validate that the ID matches MongoDB ObjectId format
+            return /^[0-9a-fA-F]{24}$/.test(id);
+          });
 
-        const averages = await Promise.all(
-          gradedTaskIds.map((taskId) =>
-            api
-              .get(`/taken/${taskId}/score`)
-              .then(({ data }) => data)
-              .catch((error) => {
-                if (error.response?.status === 403) {
-                  // Skip tasks where user doesn't have access to class average
+        const fetchWithRetry = async (taskId: string, retries = 2) => {
+          for (let i = 0; i <= retries; i++) {
+            try {
+              const { data } = await api.get(`/taken/${taskId}/score`);
+              return data;
+            } catch (error: any) {
+              if (error.response?.status === 403) {
+                // Skip tasks where user doesn't have access to class average
+                return null;
+              }
+              if (error.response?.status === 500) {
+                console.error(
+                  `Server error for task ${taskId}:`,
+                  error.response?.data || "Internal Server Error",
+                );
+                if (i === retries) {
+                  // If we've exhausted retries on a 500 error, skip this task
                   return null;
                 }
-                console.error("Error fetching task score:", error);
+              }
+              if (i === retries) {
+                console.error(
+                  `Failed to fetch score for task ${taskId} after ${retries} retries:`,
+                  error.response?.data || error.message,
+                );
                 return null;
-              }),
-          ),
+              }
+              // Wait before retrying (exponential backoff)
+              await new Promise((resolve) =>
+                setTimeout(resolve, Math.pow(2, i) * 1000),
+              );
+            }
+          }
+          return null;
+        };
+
+        const averages = await Promise.all(
+          gradedTaskIds.map((taskId) => fetchWithRetry(taskId)),
         );
 
         const validAverages = averages.filter((avg) => avg !== null);
@@ -49,9 +92,15 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
             validAverages.reduce((acc, curr) => acc + curr, 0) /
               validAverages.length,
           );
+          setError(null);
+        } else if (gradedTaskIds.length > 0) {
+          setError("Kon klasgemiddelde niet ophalen");
         }
       } catch (err) {
         console.error("Error fetching class averages:", err);
+        setError(
+          "Er is een fout opgetreden bij het ophalen van het klasgemiddelde",
+        );
       }
     };
 
@@ -99,9 +148,13 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
           <UsersRound />
           <CardTitle>Klas gemiddelde</CardTitle>
           <CardDescription className="text-center">
-            {classAverage && classAverage > 0
-              ? `${classAverage.toFixed(1)}%`
-              : "-/-"}
+            {error ? (
+              <span className="text-sm text-red-500">{error}</span>
+            ) : classAverage && classAverage > 0 ? (
+              `${classAverage.toFixed(1)}%`
+            ) : (
+              "-/-"
+            )}
           </CardDescription>
         </CardHeader>
       </Card>

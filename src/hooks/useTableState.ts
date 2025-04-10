@@ -8,10 +8,8 @@ import {
 
 import { TableState } from "../types";
 
-export const useTableState = (defaultPageSize = 5): TableState => {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "deadline", desc: false },
-  ]);
+export const useTableState = (defaultPageSize = 5, initialSorting?: SortingState): TableState => {
+  const [sorting, setSorting] = useState<SortingState>(initialSorting || []);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({
