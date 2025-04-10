@@ -109,6 +109,7 @@ export interface FilterSectionProps {
   type: string | null;
   setType: (value: string | null) => void;
   tasks: Task[];
+  isDocent: boolean;
 }
 
 export interface NavItem {

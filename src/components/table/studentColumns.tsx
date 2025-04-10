@@ -1,7 +1,6 @@
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Row } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Student } from "@/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,29 +11,52 @@ import {
 import { Ellipsis } from "lucide-react";
 import { Link } from "react-router";
 
-export const studentColumns: ColumnDef<Student>[] = [
+export type StudentRow = {
+  taakId: string;
+  lecture: string;
+  type: string;
+  klas?: string;
+  deadline: string;
+  status: string;
+  hasGradering: boolean;
+  gottenPoints: number;
+  totalPoints: number;
+  feedback: string;
+};
+
+export const studentColumns = (isDocent: boolean): ColumnDef<StudentRow>[] => [
   {
     accessorKey: "lecture",
     header: "Taken",
-    cell: ({ row }) => <div>{row.getValue("lecture")}</div>,
-    enableSorting: true,
-  },
-  {
-    accessorKey: "klas",
-    header: "Klas",
-    cell: ({ row }) => <div>{row.getValue("klas")}</div>,
+    cell: ({ row }: { row: Row<StudentRow> }) => (
+      <div>{row.getValue("lecture")}</div>
+    ),
     enableSorting: true,
   },
   {
     accessorKey: "type",
     header: "Type",
-    cell: ({ row }) => <div>{row.getValue("type")}</div>,
+    cell: ({ row }: { row: Row<StudentRow> }) => (
+      <div>{row.getValue("type")}</div>
+    ),
     enableSorting: true,
   },
+  ...(isDocent
+    ? [
+        {
+          accessorKey: "klas",
+          header: "Klas",
+          cell: ({ row }: { row: Row<StudentRow> }) => (
+            <div>{row.getValue("klas")}</div>
+          ),
+          enableSorting: true,
+        },
+      ]
+    : []),
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
+    cell: ({ row }: { row: Row<StudentRow> }) => (
       <Badge
         variant={
           row.getValue("status") === "Ingeleverd"
@@ -52,7 +74,7 @@ export const studentColumns: ColumnDef<Student>[] = [
   {
     accessorKey: "deadline",
     header: "Deadline",
-    cell: ({ row }) => {
+    cell: ({ row }: { row: Row<StudentRow> }) => {
       try {
         const date = new Date(row.getValue("deadline"));
         return (
@@ -74,12 +96,11 @@ export const studentColumns: ColumnDef<Student>[] = [
   {
     accessorKey: "score",
     header: "Score",
-    cell: ({ row }) => {
-      const hasScore = row.original.hasGradering; // This will be true if there's a grading
+    cell: ({ row }: { row: Row<StudentRow> }) => {
+      const hasScore = row.original.hasGradering;
       const points = row.original.gottenPoints;
       const total = row.original.totalPoints;
 
-      // Only show -/- if there's no grading
       if (!hasScore) {
         return <div>-/-</div>;
       }
@@ -99,12 +120,14 @@ export const studentColumns: ColumnDef<Student>[] = [
   {
     accessorKey: "feedback",
     header: "Feedback",
-    cell: ({ row }) => <div>{row.getValue("feedback")}</div>,
+    cell: ({ row }: { row: Row<StudentRow> }) => (
+      <div>{row.getValue("feedback")}</div>
+    ),
     enableSorting: true,
   },
   {
     id: "actions",
-    cell: ({ row }) => (
+    cell: ({ row }: { row: Row<StudentRow> }) => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">

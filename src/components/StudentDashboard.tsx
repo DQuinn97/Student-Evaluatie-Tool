@@ -9,24 +9,7 @@ import { PerformanceChart } from "./dashboard/PerformanceChart";
 import api from "../api";
 
 const chartConfig = {
-  name: {
-    label: "Naam",
-  },
-  points: {
-    label: "Punten",
-  },
-  klas: {
-    label: "Klas",
-  },
-  deadline: {
-    label: "Deadline",
-  },
-  status: {
-    label: "Status",
-  },
-  feedback: {
-    label: "Feedback",
-  },
+  points: { label: "Score" },
 } satisfies ChartConfig;
 
 const StudentDashboard = () => {
@@ -34,23 +17,16 @@ const StudentDashboard = () => {
   const [type, setType] = useState<string | null>("alle");
   const [tasks, setTasks] = useState<any[]>([]);
   const [userData, setUserData] = useState<any>(null);
-  const [userClass, setUserClass] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch user data
         const { data: user } = await api.get("/profiel");
         setUserData(user);
 
-        // Fetch user's class information - for students this will only return their class
         const { data: classes } = await api.get("/klassen");
         if (classes && classes.length > 0) {
-          // Since students only get their own class, we can use the first one
           const userClass = classes[0];
-          setUserClass(userClass);
-
-          // Fetch tasks for user's class
           const { data: tasksData } = await api.get(
             `/klassen/${userClass._id}/taken`,
           );
@@ -64,7 +40,6 @@ const StudentDashboard = () => {
     fetchData();
   }, []);
 
-  // Memoize the sorted table data
   const tableData = useMemo(
     () =>
       tasks
@@ -82,16 +57,31 @@ const StudentDashboard = () => {
             gottenPoints: graderingData?.score ?? 0,
             totalPoints: graderingData ? graderingData.maxscore : task.weging,
             type: task.type,
-            klas: task.klasgroep?.naam,
             deadline: task.deadline,
             status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
             feedback: graderingData?.feedback || "",
+            klas: task.klasgroep?.naam || "",
           };
         }),
     [tasks],
   );
 
-  // Memoize the chart data
+  const filteredData = useMemo(() => {
+    let filtered = tableData;
+
+    // Apply type filter
+    if (type && type !== "alle") {
+      filtered = filtered.filter((t) => t.type === type);
+    }
+
+    // Apply class filter if user is a teacher
+    if (userData?.isDocent && klas !== "alle") {
+      filtered = filtered.filter((t) => t.klas === klas);
+    }
+
+    return filtered;
+  }, [tableData, type, klas, userData?.isDocent]);
+
   const chartData = useMemo(
     () =>
       tasks
@@ -102,29 +92,33 @@ const StudentDashboard = () => {
         .map((task) => {
           const hasGradering = task.inzendingen?.[0]?.gradering?.[0];
           const score = hasGradering?.score ?? 0;
+          const maxScore = hasGradering ? hasGradering.maxscore : task.weging;
+
+          // Only include tasks that have been graded
+          if (!hasGradering) {
+            return null;
+          }
+
           return {
             taakId: task._id,
-            lecture: task.titel,
-            points: score,
-            totalPoints: hasGradering ? hasGradering.maxscore : task.weging,
-            type: task.type,
-            klas: task.klasgroep?.naam,
             deadline: task.deadline,
-            status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
-            feedback: hasGradering?.feedback || "",
+            points: score,
+            totalPoints: maxScore,
+            type: task.type,
+            klas: task.klasgroep?.naam || "",
+            titel: task.titel,
           };
-        }),
+        })
+        .filter(Boolean), // Remove null entries
     [tasks],
   );
 
-  // Memoize the table configuration
   const table = useTableConfig({
-    data: tableData,
-    columns: studentColumns,
+    data: filteredData,
+    columns: studentColumns(false),
     pageSize: 5,
   });
 
-  // Memoize filter handlers
   const handleKlasChange = useCallback((newKlas: string | null) => {
     setKlas(newKlas);
   }, []);
@@ -142,7 +136,8 @@ const StudentDashboard = () => {
       <h1 className="ml-4 text-4xl font-bold">
         {userData.naam ? `${userData.naam}'s Dashboard` : "Dashboard"}
       </h1>
-      <DashboardCards tasks={tableData} />
+
+      <DashboardCards tasks={filteredData} />
 
       <div className="mx-10">
         <h1>Snel overzicht taken</h1>
@@ -156,16 +151,17 @@ const StudentDashboard = () => {
       </div>
 
       <FilterSection
-        klas={klas}
-        setKlas={handleKlasChange}
+        klas={userData.isDocent ? klas : null}
+        setKlas={userData.isDocent ? handleKlasChange : () => {}}
         type={type}
         setType={handleTypeChange}
         tasks={tableData}
+        isDocent={userData.isDocent}
       />
 
       <PerformanceChart
         data={chartData}
-        klas={klas}
+        klas={userData.isDocent ? klas : "alle"}
         type={type}
         config={chartConfig}
       />

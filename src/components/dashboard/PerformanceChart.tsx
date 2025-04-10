@@ -1,10 +1,13 @@
+import { ChartConfig, ChartContainer, ChartTooltip } from "../ui/chart";
 import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "../ui/chart";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+  TooltipProps,
+} from "recharts";
+import { useNavigate } from "react-router";
 
 interface PerformanceChartProps {
   data: any[];
@@ -13,12 +16,34 @@ interface PerformanceChartProps {
   config: ChartConfig;
 }
 
+const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+  if (active && payload && payload.length > 0) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-background border-border/50 min-w-[8rem] rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
+        <div className="mb-1 font-medium">
+          {new Date(label).toLocaleDateString("nl-NL", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </div>
+        <div className="font-medium">{data.titel}</div>
+        <div>{`${data.points}/${data.totalPoints} punten`}</div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export const PerformanceChart = ({
   data,
   klas,
   type,
   config,
 }: PerformanceChartProps) => {
+  const navigate = useNavigate();
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("nl-NL", {
@@ -28,17 +53,28 @@ export const PerformanceChart = ({
     });
   };
 
+  const handleClick = (data: any) => {
+    if (data && data.activePayload && data.activePayload[0]) {
+      const taskId = data.activePayload[0].payload.taakId;
+      navigate(`/student/taken/${taskId}`);
+    }
+  };
+
+  const filteredData = data.filter(
+    (task) =>
+      (klas === "alle" || task.klas === klas) &&
+      (!type || type === "alle" || task.type === type),
+  );
+
   return (
     <ChartContainer config={config} className="max-h-75 w-full p-4">
       <LineChart
-        accessibilityLayer
-        data={data.filter(
-          (task) =>
-            (klas === "alle" || task.klas === klas) &&
-            (!type || type === "alle" || task.type === type),
-        )}
+        data={filteredData}
+        margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+        onClick={handleClick}
+        style={{ cursor: "pointer" }}
       >
-        <CartesianGrid vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" />
         <XAxis
           dataKey="deadline"
           tickLine={false}
@@ -46,12 +82,22 @@ export const PerformanceChart = ({
           tickMargin={8}
           tickFormatter={(value) => formatDate(value)}
         />
-        <YAxis hide={false} tickLine={false} axisLine={false} tickMargin={8} />
-        <ChartTooltip content={<ChartTooltipContent />} />
-        <Line dataKey="name" type="linear" />
-        <Line dataKey="points" type="linear" />
-        <Line dataKey="klas" type="linear" />
-        <Line dataKey="type" type="linear" />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          domain={[0, "auto"]}
+          label={{ value: "Score", angle: -90, position: "insideLeft" }}
+        />
+        <ChartTooltip content={<CustomTooltip />} />
+        <Line
+          type="monotone"
+          dataKey="points"
+          name="Score"
+          stroke="var(--chart-1)"
+          strokeWidth={2}
+          dot={{ fill: "var(--chart-1)" }}
+        />
       </LineChart>
     </ChartContainer>
   );

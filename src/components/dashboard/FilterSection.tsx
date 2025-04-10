@@ -15,30 +15,33 @@ export const FilterSection = ({
   type,
   setType,
   tasks,
+  isDocent,
 }: FilterSectionProps) => {
   return (
     <div className="m-4 flex flex-row gap-4">
-      <div className="flex items-center gap-4">
-        <h2 className="mt-0 text-lg font-semibold tracking-tight">
-          Klas selecteren
-        </h2>
-        <Select value={klas || undefined} onValueChange={setKlas}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Selecteer een klas" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="alle">Alle</SelectItem>
-            {tasks
-              .map((task) => task.klas)
-              .filter((klas, index, array) => array.indexOf(klas) === index)
-              .map((klas) => (
-                <SelectItem key={klas} value={klas}>
-                  {klas}
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {isDocent && (
+        <div className="flex items-center gap-4">
+          <h2 className="mt-0 text-lg font-semibold tracking-tight">
+            Klas selecteren
+          </h2>
+          <Select value={klas || undefined} onValueChange={setKlas}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Selecteer een klas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="alle">Alle</SelectItem>
+              {tasks
+                .map((task) => task.klas)
+                .filter((klas, index, array) => array.indexOf(klas) === index)
+                .map((klas) => (
+                  <SelectItem key={klas} value={klas}>
+                    {klas}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="flex items-center gap-4">
         <h2 className="mt-0 text-lg font-semibold tracking-tight">
@@ -61,9 +64,12 @@ export const FilterSection = ({
           </SelectContent>
         </Select>
       </div>
+
       <Button
         onClick={() => {
-          setKlas("alle");
+          if (isDocent) {
+            setKlas("alle");
+          }
           setType("alle");
         }}
       >
