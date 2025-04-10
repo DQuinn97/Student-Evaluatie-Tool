@@ -93,15 +93,19 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
         detailTitle &&
         segment === filteredSegments[filteredSegments.length - 1];
 
-      // Handle special case for stagedagboek paths
-      let path = `/${pathSegments.slice(0, index + 2).join("/")}`; // Include 'student' in the path
-      if (
+      // Handle special cases for paths
+      let path;
+      if (pathSegments.includes("docent")) {
+        path = `/${pathSegments.slice(0, index + 1).join("/")}`;
+      } else if (
         segment === "ingave" &&
         filteredSegments[index - 1] === "stagedagboek"
       ) {
         path = "/student/stagedagboek/ingave";
       } else if (segment === "stagedagboek") {
         path = "/student/stagedagboek";
+      } else {
+        path = `/${pathSegments.slice(0, index + 2).join("/")}`; // Include 'student' in the path
       }
 
       return {

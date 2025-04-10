@@ -7,12 +7,14 @@ import { DataTable } from "./shared/DataTable";
 import { FilterSection } from "./dashboard/FilterSection";
 import { PerformanceChart } from "./dashboard/PerformanceChart";
 import api from "../api";
+import { useNavigate } from "react-router";
 
 const chartConfig = {
   points: { label: "Score" },
 } satisfies ChartConfig;
 
 const StudentDashboard = () => {
+  const navigate = useNavigate();
   const [klas, setKlas] = useState<string | null>("alle");
   const [type, setType] = useState<string | null>("alle");
   const [tasks, setTasks] = useState<any[]>([]);
@@ -22,6 +24,10 @@ const StudentDashboard = () => {
     const fetchData = async () => {
       try {
         const { data: user } = await api.get("/profiel");
+        if (user.isDocent) {
+          navigate("/docent/dashboard");
+          return;
+        }
         setUserData(user);
 
         const { data: classes } = await api.get("/klassen");
@@ -38,7 +44,7 @@ const StudentDashboard = () => {
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
 
   const tableData = useMemo(
     () =>
@@ -74,13 +80,8 @@ const StudentDashboard = () => {
       filtered = filtered.filter((t) => t.type === type);
     }
 
-    // Apply class filter if user is a teacher
-    if (userData?.isDocent && klas !== "alle") {
-      filtered = filtered.filter((t) => t.klas === klas);
-    }
-
     return filtered;
-  }, [tableData, type, klas, userData?.isDocent]);
+  }, [tableData, type]);
 
   const chartData = useMemo(
     () =>
