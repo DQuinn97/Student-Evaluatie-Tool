@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -16,7 +16,11 @@ export const TaskMetrics = ({
   gottenPoints,
   totalPoints,
 }: TaskMetricsProps) => {
-  const isLate = new Date(deadline) < new Date() && status === "Open";
+  // Parse the deadline date safely and check if it's valid
+  const deadlineDate = deadline ? new Date(deadline) : null;
+  const isValidDate = deadlineDate && isValid(deadlineDate);
+
+  const isLate = isValidDate && deadlineDate < new Date() && status === "Open";
   const displayStatus = isLate ? "Te laat" : status;
   const hasGradering = gottenPoints !== undefined && gottenPoints !== null;
   const scorePercentage =
@@ -30,9 +34,11 @@ export const TaskMetrics = ({
         </CardHeader>
         <CardContent>
           <p>
-            {format(new Date(deadline), "d MMMM yyyy HH:mm", {
-              locale: nl,
-            })}
+            {isValidDate
+              ? format(deadlineDate, "d MMMM yyyy HH:mm", {
+                  locale: nl,
+                })
+              : "Geen deadline ingesteld"}
           </p>
           <p className="text-muted-foreground text-sm">
             {displayStatus === "Te laat" && "Te laat ingeleverd"}

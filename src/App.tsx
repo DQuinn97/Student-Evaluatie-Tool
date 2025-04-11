@@ -12,51 +12,62 @@ import { TaskDetail } from "./components/TaskDetail";
 import StudentStagedagboekOverview from "./components/StudentStagedagboekOverview";
 import Sidebar from "./app/sidebar/page";
 import { ClassManagement } from "./components/docent/ClassManagement";
+import { DialogProvider } from "./contexts/DialogContext";
+import { InputDialog } from "./components/shared/InputDialog";
 
 function App() {
   return (
-    <>
-      <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/reset-password" element={<ResetPass />} />
-        <Route path="/reset-password/:token" element={<ResetPass />} />
-        <Route
-          path="/*"
-          element={
-            <Sidebar>
-              <Routes>
-                <Route path="/profile" element={<Profile />} />
-                <Route
-                  path="/student/stagedagboek"
-                  element={<StudentStagedagboekOverview />}
-                />
-                <Route
-                  path="/student/stagedagboek/ingave"
-                  element={<StudentStagedagboekIngave />}
-                />
-                <Route
-                  path="/student/stagedagboek/ingave/:id"
-                  element={<StudentStagedagboekIngave />}
-                />
-                <Route
-                  path="/student/dashboard"
-                  element={<StudentDashboard />}
-                />
-                <Route path="/docent/dashboard" element={<DocentDashboard />} />
-                <Route path="/student/taken/:taakId" element={<TaskDetail />} />
-                <Route path="/docent/taken/:id" element={<TaskDetail />} />
-                <Route
-                  path="/docent/klasbeheer"
-                  element={<ClassManagement />}
-                />
-              </Routes>
-            </Sidebar>
-          }
-        />
-      </Routes>
-      <Toaster />
-    </>
+    <DialogProvider>
+      <>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPass />} />
+          <Route path="/reset-password/:token" element={<ResetPass />} />
+          <Route
+            path="/*"
+            element={
+              <Sidebar>
+                <Routes>
+                  <Route path="/profile" element={<Profile />} />
+                  <Route
+                    path="/student/stagedagboek"
+                    element={<StudentStagedagboekOverview />}
+                  />
+                  <Route
+                    path="/student/stagedagboek/ingave"
+                    element={<StudentStagedagboekIngave />}
+                  />
+                  <Route
+                    path="/student/stagedagboek/ingave/:id"
+                    element={<StudentStagedagboekIngave />}
+                  />
+                  <Route
+                    path="/student/dashboard"
+                    element={<StudentDashboard />}
+                  />
+                  <Route
+                    path="/docent/dashboard"
+                    element={<DocentDashboard />}
+                  />
+                  <Route
+                    path="/student/taken/:taakId"
+                    element={<TaskDetail />}
+                  />
+                  <Route path="/docent/taken/:id" element={<TaskDetail />} />
+                  <Route
+                    path="/docent/klasbeheer"
+                    element={<ClassManagement />}
+                  />
+                </Routes>
+              </Sidebar>
+            }
+          />
+        </Routes>
+        <Toaster />
+        <InputDialog />
+      </>
+    </DialogProvider>
   );
 }
 
