@@ -8,6 +8,9 @@ interface TaskMetricsProps {
   status: "Open" | "Ingeleverd" | "Te laat";
   gottenPoints: number;
   totalPoints: number;
+  isDocent?: boolean;
+  submittedCount?: number;
+  totalStudents?: number;
 }
 
 export const TaskMetrics = ({
@@ -15,6 +18,9 @@ export const TaskMetrics = ({
   status,
   gottenPoints,
   totalPoints,
+  isDocent = false,
+  submittedCount = 0,
+  totalStudents,
 }: TaskMetricsProps) => {
   // Parse the deadline date safely and check if it's valid
   const deadlineDate = deadline ? new Date(deadline) : null;
@@ -41,33 +47,58 @@ export const TaskMetrics = ({
               : "Geen deadline ingesteld"}
           </p>
           <p className="text-muted-foreground text-sm">
-            {displayStatus === "Te laat" && "Te laat ingeleverd"}
-            {displayStatus === "Open" && "Nog tijd over"}
-            {displayStatus === "Ingeleverd" && "Op tijd ingeleverd"}
+            {isDocent ? (
+              displayStatus === "Te laat" ? (
+                "Te laat ingeleverd"
+              ) : (
+                "Nog tijd over"
+              )
+            ) : (
+              <>
+                {displayStatus === "Te laat" && "Te laat ingeleverd"}
+                {displayStatus === "Open" && "Nog tijd over"}
+                {displayStatus === "Ingeleverd" && "Op tijd ingeleverd"}
+              </>
+            )}
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Status</CardTitle>
+          <CardTitle>{isDocent ? "Ingeleverd" : "Status"}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Badge
-            variant={
-              displayStatus === "Ingeleverd"
-                ? "success"
-                : displayStatus === "Te laat"
-                  ? "destructive"
-                  : "default"
-            }
-          >
-            {displayStatus}
-          </Badge>
-          {hasGradering && (
-            <p className="text-muted-foreground mt-2 text-sm">
-              Score ontvangen
-            </p>
+          {isDocent ? (
+            <div className="flex flex-col gap-1">
+              <div className="text-2xl font-bold">
+                {submittedCount}/{totalStudents}
+              </div>
+              <p className="text-muted-foreground text-sm">
+                {totalStudents
+                  ? `${((submittedCount / totalStudents) * 100).toFixed(1)}% ingeleverd`
+                  : "Geen studenten in deze klas"}
+              </p>
+            </div>
+          ) : (
+            <>
+              <Badge
+                variant={
+                  displayStatus === "Ingeleverd"
+                    ? "success"
+                    : displayStatus === "Te laat"
+                      ? "destructive"
+                      : "default"
+                }
+              >
+                {displayStatus}
+              </Badge>
+              {hasGradering && (
+                <p className="text-muted-foreground mt-2 text-sm">
+                  Score ontvangen
+                </p>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

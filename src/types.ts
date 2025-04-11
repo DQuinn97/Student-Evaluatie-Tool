@@ -42,14 +42,16 @@ export interface TaskDetail {
   deadline: string;
   weging: number;
   isGepubliceerd: boolean;
+  bijlagen: string[];
   klasgroep: {
     _id: string;
     naam: string;
+    studenten: Array<{
+      naam: string;
+      achternaam: string;
+    }>;
   };
-  vak?: {
-    _id: string;
-    naam: string;
-  };
+  vak?: string;
   inzendingen: Array<
     TaskSubmission & {
       student?: {
