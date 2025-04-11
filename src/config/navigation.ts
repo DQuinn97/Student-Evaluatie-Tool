@@ -1,6 +1,6 @@
 import { NavItem } from "@/types";
 
-export const navigation: NavItem[] = [
+const studentNavigation: NavItem[] = [
   {
     label: "Dashboard",
     path: "/student/dashboard",
@@ -10,10 +10,25 @@ export const navigation: NavItem[] = [
     path: "/student/stagedagboek",
     children: [
       {
+        label: "Overzicht",
+        path: "/student/stagedagboek",
+      },
+      {
         label: "Nieuwe Ingave",
         path: "/student/stagedagboek/ingave",
       },
     ],
+  },
+];
+
+const docentNavigation: NavItem[] = [
+  {
+    label: "Dashboard",
+    path: "/docent/dashboard",
+  },
+  {
+    label: "Klasbeheer",
+    path: "/docent/klasbeheer",
   },
 ];
 
@@ -22,4 +37,7 @@ export const pathLabels: Record<string, string> = {
   stagedagboek: "Stagedagboek",
   ingave: "Nieuwe Ingave",
   profile: "Profiel",
+  klasbeheer: "Klasbeheer",
 };
+
+export { studentNavigation, docentNavigation };

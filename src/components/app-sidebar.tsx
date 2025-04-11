@@ -17,8 +17,10 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router";
-import { navigation } from "@/config/navigation";
+import { studentNavigation, docentNavigation } from "@/config/navigation";
 import { NavItem } from "@/types";
+import { useEffect, useState } from "react";
+import api from "@/api";
 
 function NavLink({ item }: { item: NavItem }) {
   const location = useLocation();
@@ -66,10 +68,31 @@ function NavLink({ item }: { item: NavItem }) {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [isDocent, setIsDocent] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const { data: user } = await api.get("/profiel");
+        setIsDocent(user.isDocent);
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
+
+  if (isDocent === null) {
+    return null; // Or a loading state
+  }
+
+  const navigationItems = isDocent ? docentNavigation : studentNavigation;
+
   return (
     <Sidebar {...props} className="h-full">
       <SidebarContent className="gap-0">
-        {navigation.map((item) => (
+        {navigationItems.map((item) => (
           <NavLink key={item.path} item={item} />
         ))}
       </SidebarContent>

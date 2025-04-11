@@ -14,6 +14,7 @@ import Sidebar from "./app/sidebar/page";
 import { ClassManagement } from "./components/docent/ClassManagement";
 import { DialogProvider } from "./contexts/DialogContext";
 import { InputDialog } from "./components/shared/InputDialog";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -27,40 +28,81 @@ function App() {
           <Route
             path="/*"
             element={
-              <Sidebar>
-                <Routes>
-                  <Route path="/profile" element={<Profile />} />
-                  <Route
-                    path="/student/stagedagboek"
-                    element={<StudentStagedagboekOverview />}
-                  />
-                  <Route
-                    path="/student/stagedagboek/ingave"
-                    element={<StudentStagedagboekIngave />}
-                  />
-                  <Route
-                    path="/student/stagedagboek/ingave/:id"
-                    element={<StudentStagedagboekIngave />}
-                  />
-                  <Route
-                    path="/student/dashboard"
-                    element={<StudentDashboard />}
-                  />
-                  <Route
-                    path="/docent/dashboard"
-                    element={<DocentDashboard />}
-                  />
-                  <Route
-                    path="/student/taken/:taakId"
-                    element={<TaskDetail />}
-                  />
-                  <Route path="/docent/taken/:id" element={<TaskDetail />} />
-                  <Route
-                    path="/docent/klasbeheer"
-                    element={<ClassManagement />}
-                  />
-                </Routes>
-              </Sidebar>
+              <ProtectedRoute>
+                <Sidebar>
+                  <Routes>
+                    <Route path="/profile" element={<Profile />} />
+
+                    {/* Student Routes */}
+                    <Route
+                      path="/student/stagedagboek"
+                      element={
+                        <ProtectedRoute allowedRole="student">
+                          <StudentStagedagboekOverview />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/student/stagedagboek/ingave"
+                      element={
+                        <ProtectedRoute allowedRole="student">
+                          <StudentStagedagboekIngave />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/student/stagedagboek/ingave/:id"
+                      element={
+                        <ProtectedRoute allowedRole="student">
+                          <StudentStagedagboekIngave />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/student/dashboard"
+                      element={
+                        <ProtectedRoute allowedRole="student">
+                          <StudentDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/student/taken/:taakId"
+                      element={
+                        <ProtectedRoute allowedRole="student">
+                          <TaskDetail />
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    {/* Docent Routes */}
+                    <Route
+                      path="/docent/dashboard"
+                      element={
+                        <ProtectedRoute allowedRole="docent">
+                          <DocentDashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/docent/taken/:id"
+                      element={
+                        <ProtectedRoute allowedRole="docent">
+                          <TaskDetail />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/docent/klasbeheer"
+                      element={
+                        <ProtectedRoute allowedRole="docent">
+                          <ClassManagement />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Routes>
+                </Sidebar>
+              </ProtectedRoute>
             }
           />
         </Routes>
