@@ -92,6 +92,7 @@ export interface Entry {
 }
 
 export interface ProfileData {
+  id: string;
   naam: string;
   achternaam: string;
   gsm: string;

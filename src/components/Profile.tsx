@@ -7,24 +7,26 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ProfileData } from "../types";
 import api from "../api";
+import { useNavigate } from "react-router";
 
 const Profile = () => {
   const [formData, setFormData] = useState<ProfileData>({
+    id: "",
     naam: "",
     achternaam: "",
     gsm: "",
     foto: "https://placehold.co/250x250",
     email: "",
   });
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showId, setShowId] = useState(false);
+  const navigate = useNavigate();
 
   const fetchProfile = async () => {
     try {
       const { data } = await api.get("/profiel");
       setFormData({
+        id: data._id || "",
         naam: data.naam || "",
         achternaam: data.achternaam || "",
         gsm: data.gsm || "",
@@ -35,6 +37,10 @@ const Profile = () => {
       toast.error("Er ging iets mis bij het laden van je profiel");
     }
   };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -50,18 +56,18 @@ const Profile = () => {
     }
 
     try {
+      // Update profile data
       await api.post("/profiel/data", {
+        id: formData.id,
         naam: formData.naam,
         achternaam: formData.achternaam,
         gsm: formData.gsm,
       });
 
-      // Only upload new image if it's a base64 string
-      if (formData.foto.startsWith("data:")) {
+      // Upload the image if a new one was selected
+      if (selectedFile) {
         const imageFormData = new FormData();
-        const base64Response = await fetch(formData.foto);
-        const blob = await base64Response.blob();
-        imageFormData.append("foto", blob, "profile.jpg");
+        imageFormData.append("foto", selectedFile);
 
         await api.post("/profiel/foto", imageFormData, {
           headers: {
@@ -70,7 +76,16 @@ const Profile = () => {
         });
       }
 
-      toast.success("Profiel succesvol geüpdate");
+      toast.success(
+        "Profiel succesvol geüpdated! Je foto wordt zo bijgewerkt...",
+      );
+      // Refresh profile data to get the updated image URL from server
+      await fetchProfile();
+
+      // Force reload the parent component to update the header
+      setTimeout(() => {
+        navigate(0);
+      }, 1500);
     } catch (error) {
       toast.error((error as Error).message);
     }
@@ -85,13 +100,20 @@ const Profile = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageData = reader.result as string;
-      setFormData((prev) => ({ ...prev, foto: imageData }));
-    };
-    reader.readAsDataURL(file);
+    setSelectedFile(file);
+    // Create a preview URL for the selected image
+    const previewUrl = URL.createObjectURL(file);
+    setFormData((prev) => ({ ...prev, foto: previewUrl }));
   };
+
+  // Clean up object URL on unmount
+  useEffect(() => {
+    return () => {
+      if (formData.foto && formData.foto.startsWith("blob:")) {
+        URL.revokeObjectURL(formData.foto);
+      }
+    };
+  }, [formData.foto]);
 
   return (
     <div className="grid place-items-center">
@@ -118,6 +140,12 @@ const Profile = () => {
             onChange={handleImageChange}
           />
           <p className="text-muted-foreground mt-2 text-sm">{formData.email}</p>
+          <p
+            className="text-muted-foreground mt-2 cursor-pointer text-xs"
+            onClick={() => setShowId(!showId)}
+          >
+            ID: {showId ? formData.id : "********** (click to reveal)"}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">

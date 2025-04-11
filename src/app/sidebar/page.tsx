@@ -22,18 +22,21 @@ import api from "@/api";
 
 export default function Page({ children }: { children: React.ReactNode }) {
   const [userName, setUserName] = useState<string>("");
-
+  const [profileData, setProfileData] = useState<any>(null);
   const navigate = useNavigate();
 
+  const fetchUserData = async () => {
+    try {
+      const { data } = await api.get("/profiel");
+      setProfileData(data);
+      setUserName(data.naam ? `${data.naam} ${data.achternaam}` : data.email);
+    } catch (error) {
+      setUserName("Student");
+    }
+  };
+
   useEffect(() => {
-    fetch("http://localhost:3000/api/profiel", {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setUserName(data.naam ? `${data.naam} ${data.achternaam}` : data.email);
-      })
-      .catch(() => setUserName("Student"));
+    fetchUserData();
   }, []);
 
   const logout = () => {
@@ -57,13 +60,25 @@ export default function Page({ children }: { children: React.ReactNode }) {
             <ModeToggler />
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <CircleUserRound className="size-7 cursor-pointer stroke-1" />
+                <div className="flex items-center gap-2">
+                  {profileData?.foto ? (
+                    <img
+                      src={profileData.foto}
+                      alt="Profile"
+                      className="size-7 rounded-full object-cover"
+                    />
+                  ) : (
+                    <CircleUserRound className="size-7 cursor-pointer stroke-1" />
+                  )}
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Link to="/profile">Profiel</Link>
+                  <Link to="/profile" onClick={fetchUserData}>
+                    Profiel
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
               </DropdownMenuContent>

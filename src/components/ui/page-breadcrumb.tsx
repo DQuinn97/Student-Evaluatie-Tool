@@ -26,6 +26,13 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
   const pathSegments = location.pathname.split("/").filter(Boolean);
   const [detailTitle, setDetailTitle] = useState<string | null>(null);
 
+  // Define special routes that don't need API calls
+  const specialRoutes = {
+    new: "Nieuwe Taak",
+    ingave: "Nieuwe Ingave",
+    edit: "Taak Bewerken",
+  };
+
   // Define the types of detail pages and their configurations
   const detailPages: Record<string, DetailPageInfo> = {
     taken: {
@@ -52,6 +59,14 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
         const detailIndex = pathSegments.indexOf(config.segment);
         if (detailIndex !== -1 && pathSegments[detailIndex + 1]) {
           const id = pathSegments[detailIndex + 1];
+
+          // Check for special routes first
+          if (id in specialRoutes) {
+            setDetailTitle(specialRoutes[id as keyof typeof specialRoutes]);
+            return;
+          }
+
+          // Regular API fetch for other routes
           try {
             const response = await fetch(
               `http://localhost:3000/api/${config.apiPath}/${id}`,
@@ -108,11 +123,15 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
         path = `/${pathSegments.slice(0, index + 2).join("/")}`; // Include 'student' in the path
       }
 
-      return {
-        label: isDetailPage
-          ? detailTitle
+      const label = isDetailPage
+        ? detailTitle
+        : segment in specialRoutes
+          ? specialRoutes[segment as keyof typeof specialRoutes]
           : pathLabels[segment] ||
-            segment.charAt(0).toUpperCase() + segment.slice(1),
+            segment.charAt(0).toUpperCase() + segment.slice(1);
+
+      return {
+        label,
         path,
       };
     },
