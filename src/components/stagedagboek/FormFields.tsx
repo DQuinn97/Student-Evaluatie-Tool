@@ -33,9 +33,15 @@ type FormFieldsProps = {
   form: UseFormReturn<z.infer<typeof FormSchema>>;
   date: Date | undefined;
   setDate: (date: Date | undefined) => void;
+  isEditMode?: boolean;
 };
 
-export const FormFields = ({ form, date, setDate }: FormFieldsProps) => {
+export const FormFields = ({
+  form,
+  date,
+  setDate,
+  isEditMode = false,
+}: FormFieldsProps) => {
   return (
     <>
       <FormField
@@ -46,31 +52,35 @@ export const FormFields = ({ form, date, setDate }: FormFieldsProps) => {
             <FormItem>
               <FormLabel className="mt-4 font-semibold">Datum</FormLabel>
               <Popover>
-                <PopoverTrigger asChild>
+                <PopoverTrigger asChild disabled={isEditMode}>
                   <FormControl>
                     <Button
                       variant={"outline"}
                       className={cn(
                         "w-40",
                         !field.value && "text-muted-foreground",
+                        isEditMode && "cursor-not-allowed opacity-50",
                       )}
+                      disabled={isEditMode}
                     >
                       {date ? format(date, "PPP") : <span>Pick a date</span>}
                       <CalendarIcon className="ml-auto h-4 w-4" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    disabled={(date) =>
-                      date < new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
+                {!isEditMode && (
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      disabled={(date) =>
+                        date < new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                )}
               </Popover>
               <FormMessage />
             </FormItem>

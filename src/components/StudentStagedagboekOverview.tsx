@@ -14,11 +14,22 @@ const StudentStagedagboekOverview = () => {
   useEffect(() => {
     const fetchDagboek = async () => {
       try {
-        // First get the user's dagboek
-        const { data: user } = await api.get("/profiel");
+        // First get the user's class
+        const { data: classes } = await api.get("/klassen");
+        if (!classes || classes.length === 0) {
+          toast.error("Je bent nog niet toegevoegd aan een klas");
+          navigate("/student/dashboard");
+          return;
+        }
 
-        // Then get the dagboek details
-        const { data: dagboek } = await api.get(`/dagboek/${user.dagboek}`);
+        // Get or create dagboek
+        let { data: dagboek } = await api.get(
+          `/klassen/${classes[0]._id}/dagboek`,
+        );
+        if (!dagboek) {
+          const response = await api.post(`/klassen/${classes[0]._id}/dagboek`);
+          dagboek = response.data;
+        }
 
         setEntries(dagboek.stagedagen || []);
       } catch (error) {
@@ -28,19 +39,30 @@ const StudentStagedagboekOverview = () => {
     };
 
     fetchDagboek();
-  }, []);
+  }, [navigate]);
 
   const handleEdit = (id: string) => {
+    // Verify entry belongs to current dagboek
+    if (!entries.some((entry) => entry._id === id)) {
+      toast.error("Deze ingave bestaat niet of je hebt er geen toegang toe");
+      return;
+    }
     navigate(`/student/stagedagboek/ingave/${id}`);
   };
 
   const handleDelete = async (id: string) => {
     try {
+      // Verify entry belongs to current dagboek
+      if (!entries.some((entry) => entry._id === id)) {
+        toast.error("Deze ingave bestaat niet of je hebt er geen toegang toe");
+        return;
+      }
+
       const response = await api.delete(`/dagboek/dag/${id}`);
 
-      if (response.status === 200) {
+      if (response.status === 204) {
         setEntries(entries.filter((entry) => entry._id !== id));
-        toast.success("Entry deleted successfully");
+        toast.success("Entry verwijderd");
       }
     } catch (error) {
       toast.error((error as Error).message);
@@ -60,6 +82,15 @@ const StudentStagedagboekOverview = () => {
           doc.addPage();
         }
 
+        // Format date properly
+        const entryDate = new Date(entry.datum);
+        const formattedDate = entryDate.toLocaleDateString("nl-BE", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+
         // Set font and size for title
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
@@ -69,7 +100,7 @@ const StudentStagedagboekOverview = () => {
         doc.setFont("helvetica", "normal");
         doc.setFontSize(12);
 
-        doc.text(`Datum: ${entry.datum}`, 20, startY);
+        doc.text(`Datum: ${formattedDate}`, 20, startY);
 
         // Handle long text with word wrap
         const splitVoormiddag = doc.splitTextToSize(
@@ -108,13 +139,18 @@ const StudentStagedagboekOverview = () => {
       });
 
       // Save and download the PDF with current date
+      const currentDate = new Date().toISOString().split("T")[0];
       const fileName = Array.isArray(entries)
-        ? `stagedagboek_export_${new Date().toISOString().split("T")[0]}.pdf`
-        : `stagedagboek_${entries.datum}.pdf`;
+        ? `stagedagboek_export_${currentDate}.pdf`
+        : `stagedagboek_${new Date(entries.datum).toISOString().split("T")[0]}.pdf`;
       doc.save(fileName);
     } catch (error) {
       console.error("Error exporting to PDF:", error);
     }
+  };
+
+  const handleExportSingle = (entry: Entry) => {
+    handleExport(entry);
   };
 
   return (
@@ -128,7 +164,7 @@ const StudentStagedagboekOverview = () => {
             onClick={() => handleExport(entries)}
           >
             <FileDown className="size-4" />
-            Exporteer PDF
+            Exporteer Alle
           </Button>
           <Button
             className="flex gap-2"
@@ -158,6 +194,15 @@ const StudentStagedagboekOverview = () => {
                 <Button
                   variant="outline"
                   size="icon"
+                  title="Exporteer"
+                  onClick={() => handleExportSingle(entry)}
+                >
+                  <FileDown className="size-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  title="Bewerk"
                   onClick={() => handleEdit(entry._id)}
                 >
                   <Edit className="size-4" />
@@ -165,6 +210,7 @@ const StudentStagedagboekOverview = () => {
                 <Button
                   variant="destructive"
                   size="icon"
+                  title="Verwijder"
                   onClick={() => handleDelete(entry._id)}
                 >
                   <Trash2 className="size-4" />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -12,8 +12,11 @@ import api from "../api";
 
 const StudentStagedagboekIngave = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [files, setFiles] = useState<File[]>([]);
+  const [dagboekId, setDagboekId] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -27,11 +30,42 @@ const StudentStagedagboekIngave = () => {
   });
 
   useEffect(() => {
-    const fetchDag = async () => {
-      if (id) {
-        try {
-          const { data } = await api.get(`/dagboek/dag/${id}`);
+    const fetchDagboekAndEntry = async () => {
+      try {
+        // Get user's class
+        const { data: classes } = await api.get("/klassen");
+        if (!classes || classes.length === 0) {
+          toast.error("Je bent nog niet toegevoegd aan een klas");
+          navigate("/student/dashboard");
+          return;
+        }
 
+        // Get or create dagboek
+        let { data: dagboek } = await api.get(
+          `/klassen/${classes[0]._id}/dagboek`,
+        );
+        if (!dagboek) {
+          const response = await api.post(`/klassen/${classes[0]._id}/dagboek`);
+          dagboek = response.data;
+        }
+
+        setDagboekId(dagboek._id);
+
+        // If editing, verify the entry belongs to this dagboek
+        if (id) {
+          setIsEditMode(true);
+          const isValidEntry = dagboek.stagedagen?.some(
+            (dag: any) => dag._id === id,
+          );
+          if (!isValidEntry) {
+            toast.error(
+              "Deze ingave bestaat niet of je hebt er geen toegang toe",
+            );
+            navigate("/student/stagedagboek");
+            return;
+          }
+
+          const { data } = await api.get(`/dagboek/dag/${id}`);
           form.reset({
             date: new Date(data.datum),
             voormiddag: data.voormiddag,
@@ -40,18 +74,32 @@ const StudentStagedagboekIngave = () => {
             result: data.resultaat,
           });
           setDate(new Date(data.datum));
-        } catch (error) {
-          toast.error("Failed to load day entry");
-          console.error(error);
         }
+      } catch (error) {
+        toast.error("Failed to load data");
+        console.error(error);
       }
     };
-    fetchDag();
-  }, [id, form]);
+
+    fetchDagboekAndEntry();
+  }, [id, form, navigate]);
+
+  // Custom date setter that only updates the date in create mode
+  const handleDateChange = (newDate: Date | undefined) => {
+    if (!isEditMode && newDate) {
+      setDate(newDate);
+      form.setValue("date", newDate);
+    }
+  };
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
-      const endpoint = id ? `/dagboek/dag/${id}` : "/dagboek/dag/nieuw";
+      if (!dagboekId) {
+        toast.error("Geen dagboek gevonden");
+        return;
+      }
+
+      const endpoint = id ? `/dagboek/dag/${id}` : `/dagboek/${dagboekId}/dag`;
       const method = id ? "patch" : "post";
 
       // If there are files, use FormData
@@ -95,6 +143,7 @@ const StudentStagedagboekIngave = () => {
           ? "Stagedagboek ingave bijgewerkt."
           : "Nieuwe stagedagboek ingave toegevoegd.",
       );
+      navigate("/student/stagedagboek");
     } catch (error) {
       toast.error((error as Error).message);
     }
@@ -110,7 +159,12 @@ const StudentStagedagboekIngave = () => {
         <div className="m-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <FormFields form={form} date={date} setDate={setDate} />
+              <FormFields
+                form={form}
+                date={date}
+                setDate={handleDateChange}
+                isEditMode={isEditMode}
+              />
               <FileUpload files={files} setFiles={setFiles} />
               <Button type="submit" className="mt-4 w-full">
                 Verzenden

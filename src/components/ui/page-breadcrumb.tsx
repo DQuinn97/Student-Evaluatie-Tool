@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { useLocation } from "react-router";
+import { useLocation, Link } from "react-router";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -52,6 +52,13 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
     },
   };
 
+  // Check if we're editing a stagedagboek entry (URL pattern: /student/stagedagboek/ingave/{id})
+  const isEditingStagedagboek =
+    pathSegments.includes("stagedagboek") &&
+    pathSegments.includes("ingave") &&
+    pathSegments.length > 3 &&
+    pathSegments[pathSegments.indexOf("ingave") + 1] !== undefined;
+
   useEffect(() => {
     const fetchDetailTitle = async () => {
       // Find if we're on a detail page by checking the URL segments
@@ -102,8 +109,9 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
   const filteredSegments = pathSegments.filter(
     (segment) => segment !== "student",
   );
-  const breadcrumbItems: BreadcrumbItem[] = filteredSegments.map(
-    (segment, index) => {
+
+  const breadcrumbItems: BreadcrumbItem[] = filteredSegments
+    .map((segment, index) => {
       const isDetailPage =
         detailTitle &&
         segment === filteredSegments[filteredSegments.length - 1];
@@ -123,19 +131,36 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
         path = `/${pathSegments.slice(0, index + 2).join("/")}`; // Include 'student' in the path
       }
 
-      const label = isDetailPage
-        ? detailTitle
-        : segment in specialRoutes
-          ? specialRoutes[segment as keyof typeof specialRoutes]
-          : pathLabels[segment] ||
-            segment.charAt(0).toUpperCase() + segment.slice(1);
+      // Handle the label for this segment
+      let label;
+
+      // For ID segments when editing stagedagboek, skip (return null)
+      if (
+        isEditingStagedagboek &&
+        index === filteredSegments.length - 1 &&
+        segment !== "ingave"
+      ) {
+        return null;
+      }
+
+      if (isDetailPage) {
+        label = detailTitle;
+      } else if (segment === "ingave" && isEditingStagedagboek) {
+        label = "Bewerk Ingave";
+      } else if (segment in specialRoutes) {
+        label = specialRoutes[segment as keyof typeof specialRoutes];
+      } else {
+        label =
+          pathLabels[segment] ||
+          segment.charAt(0).toUpperCase() + segment.slice(1);
+      }
 
       return {
         label,
         path,
       };
-    },
-  );
+    })
+    .filter(Boolean) as BreadcrumbItem[];
 
   return (
     <Breadcrumb>
@@ -152,7 +177,9 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
               {index === breadcrumbItems.length - 1 ? (
                 <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
               ) : (
-                <BreadcrumbLink href={crumb.path}>{crumb.label}</BreadcrumbLink>
+                <BreadcrumbLink asChild>
+                  <Link to={crumb.path}>{crumb.label}</Link>
+                </BreadcrumbLink>
               )}
             </BreadcrumbItem>
           </Fragment>
