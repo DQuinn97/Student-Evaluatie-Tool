@@ -3,7 +3,7 @@ import { TaskHeader } from "./TaskHeader";
 import { TaskMetrics } from "./TaskMetrics";
 import { TaskDescription } from "./TaskDescription";
 import { Separator } from "../ui/separator";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
 import { ArrowLeft, Edit } from "lucide-react";
 import { TaskDetail as ITaskDetail } from "../../types";
 import { CreateTaskForm } from "./CreateTaskForm";

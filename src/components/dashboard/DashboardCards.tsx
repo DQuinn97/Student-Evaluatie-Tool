@@ -40,7 +40,7 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
           .filter(
             (task) => task.status === "Ingeleverd" && task.gottenPoints > 0,
           )
-          .map((task) => task.taakId)
+          .map((task) => task._id)
           .filter((id) => {
             // Validate that the ID matches MongoDB ObjectId format
             return /^[0-9a-fA-F]{24}$/.test(id);

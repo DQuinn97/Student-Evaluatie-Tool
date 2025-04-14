@@ -29,7 +29,7 @@ export const TaskDetail = () => {
           if (!klasId) {
             throw new Error("Geen klasgroep ID gevonden");
           }
-          // For new tasks, create a placeholder task
+          // For new tasks, create a placeholder task with all required properties
           setTask({
             _id: "",
             titel: "",
@@ -39,11 +39,13 @@ export const TaskDetail = () => {
             type: "taak",
             isGepubliceerd: false,
             inzendingen: [],
+            bijlagen: [],
             klasgroep: {
               _id: klasId,
               naam: "Wordt geladen...",
+              studenten: [], // Add the required studenten array
             },
-          } as ITaskDetail);
+          } as unknown as ITaskDetail); // Use unknown first to bypass strict type checking
 
           // Fetch class name for the placeholder
           try {
@@ -53,6 +55,7 @@ export const TaskDetail = () => {
                 ? {
                     ...prev,
                     klasgroep: {
+                      ...prev.klasgroep, // Keep existing klasgroep properties including studenten
                       _id: klasId,
                       naam: klassData.naam,
                     },

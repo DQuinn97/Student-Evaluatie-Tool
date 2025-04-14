@@ -83,6 +83,34 @@ const StudentDashboard = () => {
     return filtered;
   }, [tableData, type]);
 
+  // Convert filteredData to match Task interface for DashboardCards
+  const tasksForCards = useMemo(() => {
+    return tasks
+      .filter((task) => {
+        if (type && type !== "alle") {
+          return task.type === type;
+        }
+        return true;
+      })
+      .map((task) => {
+        const graderingData = task.inzendingen?.[0]?.gradering?.[0];
+        return {
+          _id: task._id,
+          taakId: task._id,
+          titel: task.titel,
+          lecture: task.titel,
+          type: task.type,
+          deadline: task.deadline,
+          inzendingen: task.inzendingen,
+          status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
+          gottenPoints: graderingData?.score ?? 0,
+          totalPoints: graderingData ? graderingData.maxscore : task.weging,
+          klas: task.klasgroep?.naam || "",
+          feedback: graderingData?.feedback || "",
+        };
+      });
+  }, [tasks, type]);
+
   const chartData = useMemo(
     () =>
       tasks
@@ -138,7 +166,7 @@ const StudentDashboard = () => {
         {userData.naam ? `${userData.naam}'s Dashboard` : "Dashboard"}
       </h1>
 
-      <DashboardCards tasks={filteredData} />
+      <DashboardCards tasks={tasksForCards} />
 
       <div className="mx-10">
         <h1>Snel overzicht taken</h1>
