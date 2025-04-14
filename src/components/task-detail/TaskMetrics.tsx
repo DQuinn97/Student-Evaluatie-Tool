@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 interface TaskMetricsProps {
   deadline: string;
   status: "Open" | "Ingeleverd" | "Te laat";
-  gottenPoints: number;
+  gottenPoints: number | undefined | null;
   totalPoints: number;
   isDocent?: boolean;
   submittedCount?: number;
@@ -30,7 +30,9 @@ export const TaskMetrics = ({
   const displayStatus = isLate ? "Te laat" : status;
   const hasGradering = gottenPoints !== undefined && gottenPoints !== null;
   const scorePercentage =
-    totalPoints > 0 ? ((gottenPoints / totalPoints) * 100).toFixed(1) : 0;
+    totalPoints > 0 && gottenPoints
+      ? ((gottenPoints / totalPoints) * 100).toFixed(1)
+      : 0;
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
