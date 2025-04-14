@@ -33,6 +33,8 @@ export const TaskDetail = () => {
           setTask({
             _id: "",
             titel: "",
+            git: "",
+            url: "",
             beschrijving: "",
             deadline: "",
             weging: 1,

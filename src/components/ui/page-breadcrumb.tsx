@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "./breadcrumb";
 import { pathLabels } from "@/config/navigation";
+import api from "@/api";
 
 interface BreadcrumbItem {
   label: string;
@@ -75,14 +76,8 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
 
           // Regular API fetch for other routes
           try {
-            const response = await fetch(
-              `http://localhost:3000/api/${config.apiPath}/${id}`,
-              {
-                credentials: "include",
-              },
-            );
-            if (!response.ok) throw new Error("Failed to fetch details");
-            const data = await response.json();
+            const { data } = await api.get(`${config.apiPath}/${id}`);
+            if (!data) throw new Error("Failed to fetch details");
 
             // Format the title based on the type of detail
             let title = data[config.titleField];

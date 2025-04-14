@@ -21,8 +21,8 @@ export const TaskSubmissionForm = ({
   const [files, setFiles] = useState<File[]>([]);
   const [submission, setSubmission] = useState<TaskSubmission>(() => ({
     _id: initialSubmission?._id || "",
-    liveUrl: initialSubmission?.liveUrl || "",
-    gitUrl: initialSubmission?.gitUrl || "",
+    live: initialSubmission?.live || "",
+    git: initialSubmission?.git || "",
     beschrijving: initialSubmission?.beschrijving || "",
     bijlagen: initialSubmission?.bijlagen || [],
   }));
@@ -73,7 +73,7 @@ export const TaskSubmissionForm = ({
           <Input
             id="url"
             placeholder="Voer een URL in"
-            value={submission.liveUrl}
+            value={submission.live}
             onChange={(e) =>
               setSubmission((prev) => ({ ...prev, liveUrl: e.target.value }))
             }
@@ -87,7 +87,7 @@ export const TaskSubmissionForm = ({
           <Input
             id="github"
             placeholder="Voer een GitHub URL in"
-            value={submission.gitUrl}
+            value={submission.git}
             onChange={(e) =>
               setSubmission((prev) => ({ ...prev, gitUrl: e.target.value }))
             }
@@ -114,9 +114,9 @@ export const TaskSubmissionForm = ({
         </div>
 
         <div>
-          <Label>Bijlagen</Label>
           {!isSubmitted && !isDocent && (
             <div className="mt-2">
+              <Label>Bijlagen</Label>
               <input
                 type="file"
                 multiple

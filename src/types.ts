@@ -38,6 +38,8 @@ export interface TaskDetail {
   _id: string;
   type: string;
   titel: string;
+  git: string;
+  url: string;
   beschrijving: string;
   deadline: string;
   weging: number;
@@ -64,8 +66,8 @@ export interface TaskDetail {
 
 export interface TaskSubmission {
   _id: string;
-  gitUrl: string;
-  liveUrl: string;
+  git: string;
+  live: string;
   beschrijving: string;
   bijlagen: string[];
   gradering?: Array<{

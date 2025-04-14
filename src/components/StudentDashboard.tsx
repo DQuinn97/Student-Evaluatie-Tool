@@ -36,7 +36,11 @@ const StudentDashboard = () => {
           const { data: tasksData } = await api.get(
             `/klassen/${userClass._id}/taken`,
           );
-          setTasks(tasksData);
+          // Filter to only include published tasks (gepubliceerde taken)
+          const publishedTasks = tasksData.filter(
+            (task: any) => task.isGepubliceerd,
+          );
+          setTasks(publishedTasks);
         }
       } catch (err) {
         console.error("Error fetching data:", err);
