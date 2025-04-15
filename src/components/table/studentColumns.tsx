@@ -118,11 +118,6 @@ export const studentColumns = (isDocent: boolean): ColumnDef<StudentRow>[] => [
               </span>
             </>
           )}
-          {!hasScore && (
-            <>
-              <span>- / -</span>
-            </>
-          )}
         </div>
       );
     },

@@ -28,7 +28,7 @@ export const TaskMetrics = ({
 
   const isLate = isValidDate && deadlineDate < new Date() && status === "Open";
   const displayStatus = isLate ? "Te laat" : status;
-  const hasGradering = gottenPoints !== undefined && gottenPoints !== null;
+  const hasGradering = typeof gottenPoints === "number";
   const scorePercentage =
     totalPoints > 0 && gottenPoints
       ? ((gottenPoints / totalPoints) * 100).toFixed(1)
