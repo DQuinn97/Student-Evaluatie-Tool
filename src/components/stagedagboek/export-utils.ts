@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import jsPDF from "jspdf";
-import { Entry } from "./types";
+import { Entry } from "@/types";
 
 export const exportToPdf = async (
   entries: Entry[] | Entry,

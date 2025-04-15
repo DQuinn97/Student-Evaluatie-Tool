@@ -16,32 +16,16 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { UseFormReturn } from "react-hook-form";
-import { z } from "zod";
+import { StagedagboekFormSchema, StagedagboekFormFieldsProps } from "@/types";
 
-export const FormSchema = z.object({
-  date: z.date({
-    required_error: "Een datum is verplicht.",
-  }),
-  voormiddag: z.string().min(1, "Voormiddag taken zijn verplicht."),
-  namiddag: z.string().min(1, "Namiddag taken zijn verplicht."),
-  tools: z.string().min(1, "Gebruikte tools zijn verplicht."),
-  result: z.string().min(1, "Resultaat is verplicht."),
-});
-
-type FormFieldsProps = {
-  form: UseFormReturn<z.infer<typeof FormSchema>>;
-  date: Date | undefined;
-  setDate: (date: Date | undefined) => void;
-  isEditMode?: boolean;
-};
+export const FormSchema = StagedagboekFormSchema;
 
 export const FormFields = ({
   form,
   date,
   setDate,
   isEditMode = false,
-}: FormFieldsProps) => {
+}: StagedagboekFormFieldsProps) => {
   return (
     <>
       <FormField

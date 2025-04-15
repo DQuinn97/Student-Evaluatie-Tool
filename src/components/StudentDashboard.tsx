@@ -6,6 +6,7 @@ import { DashboardCards } from "./dashboard/DashboardCards";
 import { DataTable } from "./shared/DataTable";
 import { FilterSection } from "./dashboard/FilterSection";
 import { PerformanceChart } from "./dashboard/PerformanceChart";
+import { NameDialog } from "./shared/NameDialog";
 import api from "../api";
 import { useNavigate } from "react-router";
 
@@ -19,6 +20,7 @@ const StudentDashboard = () => {
   const [type, setType] = useState<string | null>("alle");
   const [tasks, setTasks] = useState<any[]>([]);
   const [userData, setUserData] = useState<any>(null);
+  const [showNameDialog, setShowNameDialog] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,6 +31,16 @@ const StudentDashboard = () => {
           return;
         }
         setUserData(user);
+
+        // Check if user's name data is missing or empty
+        if (
+          !user.naam ||
+          user.naam.trim() === "" ||
+          !user.achternaam ||
+          user.achternaam.trim() === ""
+        ) {
+          setShowNameDialog(true);
+        }
 
         const { data: classes } = await api.get("/klassen");
         if (classes && classes.length > 0) {
@@ -58,19 +70,10 @@ const StudentDashboard = () => {
             new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
         )
         .map((task) => {
-          const hasGradering = task.inzendingen?.[0]?.gradering?.length > 0;
-          const graderingData = task.inzendingen?.[0]?.gradering?.[0];
           return {
-            taakId: task._id,
-            lecture: task.titel,
-            hasGradering,
-            gottenPoints: graderingData?.score ?? 0,
-            totalPoints: graderingData ? graderingData.maxscore : task.weging,
-            type: task.type,
-            deadline: task.deadline,
+            ...task, // Spread all original task properties
+            lecture: task.titel, // Additional properties needed for UI
             status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
-            feedback: graderingData?.feedback || "",
-            klas: task.klasgroep?.naam || "",
           };
         }),
     [tasks],
@@ -166,6 +169,15 @@ const StudentDashboard = () => {
 
   return (
     <div>
+      <NameDialog
+        isOpen={showNameDialog}
+        onOpenChange={setShowNameDialog}
+        userData={userData}
+        onUserDataUpdate={setUserData}
+        initialFirstName={userData.naam || ""}
+        initialLastName={userData.achternaam || ""}
+      />
+
       <h1 className="ml-4 text-4xl font-bold">
         {userData.naam ? `${userData.naam}'s Dashboard` : "Dashboard"}
       </h1>

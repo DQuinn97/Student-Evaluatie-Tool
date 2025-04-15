@@ -16,6 +16,7 @@ import { DialogProvider } from "./contexts/DialogContext";
 import { InputDialog } from "./components/shared/InputDialog";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { StudentStagedagboekView } from "./components/docent/StudentStagedagboekView";
+import { AllStagedagboekenView } from "./components/docent/AllStagedagboekenView";
 
 function App() {
   return (
@@ -98,6 +99,14 @@ function App() {
                       element={
                         <ProtectedRoute allowedRole="docent">
                           <ClassManagement />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/docent/stagedagboeken"
+                      element={
+                        <ProtectedRoute allowedRole="docent">
+                          <AllStagedagboekenView />
                         </ProtectedRoute>
                       }
                     />

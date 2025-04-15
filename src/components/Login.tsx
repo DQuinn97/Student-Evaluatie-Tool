@@ -34,6 +34,7 @@ const Login = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+
   const onSubmit = async function () {
     setIsLoading(true);
     try {
@@ -46,12 +47,12 @@ const Login = () => {
 
       if (response.status === 200) {
         toast.success(data.message);
+        setTimeout(() => {
+          navigate("/student/dashboard");
+        }, 1500);
       } else {
         toast.error(data.message);
       }
-      setTimeout(() => {
-        navigate("/student/dashboard");
-      }, 1500);
     } catch (error) {
       toast.error((error as { message: string }).message ?? "Onbekende fout");
     } finally {

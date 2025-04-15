@@ -1,14 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { FileDown, Edit, Trash2 } from "lucide-react";
-import { Entry } from "./types";
-
-interface EntryCardProps {
-  entry: Entry;
-  isDocent: boolean;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onExport: (entry: Entry) => void;
-}
+import { Entry, EntryCardProps } from "@/types";
 
 export const EntryCard = ({
   entry,

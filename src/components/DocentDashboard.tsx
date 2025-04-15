@@ -3,6 +3,7 @@ import * as Accordion from "@radix-ui/react-accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccordionClassView } from "./docent/AccordionClassView";
 import { ClassManagement } from "./docent/ClassManagement";
+import { NameDialog } from "./shared/NameDialog";
 import api from "../api";
 import { useNavigate } from "react-router";
 
@@ -11,6 +12,7 @@ const DocentDashboard = () => {
   const [userData, setUserData] = useState<any>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
+  const [showNameDialog, setShowNameDialog] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,6 +23,16 @@ const DocentDashboard = () => {
           return;
         }
         setUserData(user);
+
+        // Check if user's name data is missing or empty
+        if (
+          !user.naam ||
+          user.naam.trim() === "" ||
+          !user.achternaam ||
+          user.achternaam.trim() === ""
+        ) {
+          setShowNameDialog(true);
+        }
 
         const { data: classesData } = await api.get("/klassen");
         if (classesData && classesData.length > 0) {
@@ -48,6 +60,15 @@ const DocentDashboard = () => {
 
   return (
     <div className="container mx-auto p-6">
+      <NameDialog
+        isOpen={showNameDialog}
+        onOpenChange={setShowNameDialog}
+        userData={userData}
+        onUserDataUpdate={setUserData}
+        initialFirstName={userData.naam || ""}
+        initialLastName={userData.achternaam || ""}
+      />
+
       <h1 className="mb-6 text-4xl font-bold">
         {userData.naam ? `${userData.naam}'s Dashboard` : "Dashboard"}
       </h1>
