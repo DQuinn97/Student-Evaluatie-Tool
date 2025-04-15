@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "@/api";
-import { Class, Task, Student } from "@/types/class";
+import { Class, Task, Student } from "@/types";
 import { useDialog } from "@/contexts/DialogContext";
 import { useNavigate } from "react-router";
 

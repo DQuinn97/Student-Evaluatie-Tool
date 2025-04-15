@@ -88,16 +88,18 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
       };
     });
 
+  // Zorg ervoor dat filterSectionTasks voldoet aan het Task type
   const filterSectionTasks = tableData.map((task) => ({
-    taakId: task._id,
-    lecture: task.titel,
-    klas: task.klas,
+    _id: task._id,
+    titel: task.titel,
     type: task.type,
     deadline: task.deadline,
-    status: task.status,
-    feedback: task.feedback,
-    totalPoints: task.totalPoints,
-    gottenPoints: task.gottenPoints,
+    weging: task.totalPoints, // Gebruik totalPoints als weging
+    inzendingen: task.inzendingen,
+    klasgroep: {
+      _id: classData._id,
+      naam: classData.naam,
+    },
   }));
 
   const filteredData = tableData.filter(

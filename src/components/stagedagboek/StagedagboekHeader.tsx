@@ -1,13 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, FileDown, Plus } from "lucide-react";
-
-interface HeaderProps {
-  title: string;
-  isDocent: boolean;
-  onExportAll: () => void;
-  onBack: () => void;
-  onNewEntry?: () => void;
-}
+import { StagedagboekHeaderProps } from "@/types";
 
 export const StagedagboekHeader = ({
   title,
@@ -15,7 +8,7 @@ export const StagedagboekHeader = ({
   onExportAll,
   onBack,
   onNewEntry,
-}: HeaderProps) => {
+}: StagedagboekHeaderProps) => {
   return (
     <>
       <div className="mb-6 flex items-center justify-between">

@@ -58,19 +58,10 @@ const StudentDashboard = () => {
             new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
         )
         .map((task) => {
-          const hasGradering = task.inzendingen?.[0]?.gradering?.length > 0;
-          const graderingData = task.inzendingen?.[0]?.gradering?.[0];
           return {
-            taakId: task._id,
-            lecture: task.titel,
-            hasGradering,
-            gottenPoints: graderingData?.score ?? 0,
-            totalPoints: graderingData ? graderingData.maxscore : task.weging,
-            type: task.type,
-            deadline: task.deadline,
+            ...task, // Spread all original task properties
+            lecture: task.titel, // Additional properties needed for UI
             status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
-            feedback: graderingData?.feedback || "",
-            klas: task.klasgroep?.naam || "",
           };
         }),
     [tasks],

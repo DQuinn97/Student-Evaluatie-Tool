@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/accordion";
 import { DataTable } from "../shared/DataTable";
 import { useTableConfig } from "@/hooks/useTableConfig";
-import { Student } from "@/types/class";
+import { Student } from "@/types";
 import { Row } from "@tanstack/react-table";
 import {
   AlertDialog,

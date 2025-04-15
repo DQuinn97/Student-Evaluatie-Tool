@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Class } from "@/types/class";
+import { Class } from "@/types";
 
 type ClassListProps = {
   classes: Class[];

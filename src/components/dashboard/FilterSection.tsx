@@ -10,7 +10,6 @@ import { RotateCcw } from "lucide-react";
 import { FilterSectionProps } from "@/types";
 
 export const FilterSection = ({
-  klas,
   setKlas,
   type,
   setType,
@@ -19,30 +18,6 @@ export const FilterSection = ({
 }: FilterSectionProps) => {
   return (
     <div className="m-4 flex flex-row gap-4">
-      {isDocent && (
-        <div className="flex items-center gap-4">
-          <h2 className="mt-0 text-lg font-semibold tracking-tight">
-            Klas selecteren
-          </h2>
-          <Select value={klas || undefined} onValueChange={setKlas}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Selecteer een klas" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="alle">Alle</SelectItem>
-              {tasks
-                .map((task) => task.klas)
-                .filter((klas, index, array) => array.indexOf(klas) === index)
-                .map((klas) => (
-                  <SelectItem key={klas} value={klas}>
-                    {klas}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
       <div className="flex items-center gap-4">
         <h2 className="mt-0 text-lg font-semibold tracking-tight">
           Type selecteren

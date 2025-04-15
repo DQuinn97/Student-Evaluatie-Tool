@@ -7,32 +7,42 @@ import {
 } from "@tanstack/react-table";
 
 export type Student = {
-  id: number;
-  name: string;
-  taakId: string;
-  lecture: string;
-  klas: string;
-  type: string;
-  deadline: string;
-  status: string;
-  feedback: string;
-  totalPoints: number;
-  gottenPoints: number;
-  hasGradering: boolean;
-  tasks: Task[];
+  _id: string;
+  naam: string;
+  achternaam: string;
+  email: string;
+  foto?: string;
 };
 
 export type Task = {
-  taakId: string;
-  lecture: string;
-  klas: string;
+  _id: string;
+  titel: string;
   type: string;
   deadline: string;
-  status: string;
-  feedback: string;
-  totalPoints: number;
-  gottenPoints: number;
+  weging: number;
+  inzendingen: Array<{
+    _id: string;
+    gradering: Array<{
+      score: number;
+      maxscore: number;
+    }>;
+  }>;
+  klasgroep: {
+    _id: string;
+    naam: string;
+  };
 };
+
+export type Class = {
+  _id: string;
+  naam: string;
+  studenten?: Student[];
+};
+
+export type DeleteItem = {
+  type: "task" | "student";
+  id: string;
+} | null;
 
 export interface TaskDetail {
   _id: string;
@@ -43,6 +53,7 @@ export interface TaskDetail {
   beschrijving: string;
   deadline: string;
   weging: number;
+  maxScore: number;
   isGepubliceerd: boolean;
   bijlagen: string[];
   klasgroep: {
@@ -164,3 +175,48 @@ export interface UseTableConfigProps<TData> {
   columns: any[];
   pageSize?: number;
 }
+
+// Stagedagboek types
+export interface StagedagboekHeaderProps {
+  title: string;
+  isDocent: boolean;
+  onExportAll: () => void;
+  onBack: () => void;
+  onNewEntry?: () => void;
+}
+
+export interface EntryCardProps {
+  entry: Entry;
+  isDocent: boolean;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onExport: (entry: Entry) => void;
+}
+
+export interface StagedagboekViewProps {
+  klasId?: string;
+  studentId?: string;
+  isDocent: boolean;
+  title?: string;
+}
+
+// Form schema for stagedagboek
+import { z } from "zod";
+import { UseFormReturn } from "react-hook-form";
+
+export const StagedagboekFormSchema = z.object({
+  date: z.date({
+    required_error: "Een datum is verplicht.",
+  }),
+  voormiddag: z.string().min(1, "Voormiddag taken zijn verplicht."),
+  namiddag: z.string().min(1, "Namiddag taken zijn verplicht."),
+  tools: z.string().min(1, "Gebruikte tools zijn verplicht."),
+  result: z.string().min(1, "Resultaat is verplicht."),
+});
+
+export type StagedagboekFormFieldsProps = {
+  form: UseFormReturn<z.infer<typeof StagedagboekFormSchema>>;
+  date: Date | undefined;
+  setDate: (date: Date | undefined) => void;
+  isEditMode?: boolean;
+};

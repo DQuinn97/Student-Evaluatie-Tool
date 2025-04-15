@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import api from "@/api";
-import { Entry } from "./types";
+import { Entry } from "@/types";
 
 export const useStagedagboek = (
   isDocent: boolean,

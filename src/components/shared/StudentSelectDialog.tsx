@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Student } from "@/types/class";
+import { Student } from "@/types";
 import api from "@/api";
 
 type StudentSelectDialogProps = {

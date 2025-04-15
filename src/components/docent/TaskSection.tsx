@@ -10,7 +10,7 @@ import { useTableConfig } from "@/hooks/useTableConfig";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { useNavigate } from "react-router";
-import { Task } from "@/types/class";
+import { Task } from "@/types";
 import { Row } from "@tanstack/react-table";
 import {
   AlertDialog,
