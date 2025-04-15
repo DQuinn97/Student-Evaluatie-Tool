@@ -26,12 +26,34 @@ export const useStagedagboek = (
           const { data: student } = await api.get(`/profiel/${studentId}`);
           setStudentName(`${student.naam} ${student.achternaam || ""}`);
 
-          const { data: dagboek } = await api.get(
-            `/dagboek/${klasId}/${studentId}`,
-          );
-          if (dagboek) {
-            setDagboekId(dagboek._id);
-            setEntries(dagboek.stagedagen || []);
+          try {
+            const { data: dagboek } = await api.get(
+              `/dagboek/${klasId}/${studentId}`,
+            );
+
+            if (dagboek) {
+              setDagboekId(dagboek._id);
+              setEntries(dagboek.stagedagen || []);
+
+              // If docent tries to view a student's stagedagboek with no entries, redirect them
+              if (
+                isDocent &&
+                (!dagboek.stagedagen || dagboek.stagedagen.length === 0)
+              ) {
+                toast.error(
+                  `${student.naam} ${student.achternaam} heeft nog geen stagedagboek ingaves.`,
+                );
+                navigate("/docent/stagedagboeken");
+                return;
+              }
+            }
+          } catch (error) {
+            // If API returns an error, it likely means no stagedagboek exists
+            toast.error(
+              `${student.naam} ${student.achternaam} heeft nog geen stagedagboek ingaves.`,
+            );
+            navigate("/docent/stagedagboeken");
+            return;
           }
         } else {
           // Student view - get the student's own dagboek
@@ -60,6 +82,11 @@ export const useStagedagboek = (
       } catch (error) {
         console.error("Error fetching dagboek:", error);
         toast.error("Kon het stagedagboek niet laden");
+
+        // If there's an error and the user is a docent, redirect them back to the overview
+        if (isDocent) {
+          navigate("/docent/stagedagboeken");
+        }
       } finally {
         setIsLoading(false);
       }
