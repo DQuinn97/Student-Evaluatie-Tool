@@ -2,9 +2,7 @@ import { TaskSubmissionForm } from "./TaskSubmissionForm";
 import { toast } from "sonner";
 import api from "../../api";
 import { TaskSubmission } from "../../types";
-import { T } from "node_modules/react-router/dist/development/fog-of-war-BjgPfDmv.d.mts";
-import { useState } from "react";
-import { Button } from "../ui/button";
+import { useState, useEffect } from "react";
 
 interface TaskSubmissionReviewProps {
   submission: TaskSubmission & {
@@ -15,40 +13,62 @@ interface TaskSubmissionReviewProps {
   };
   maxScore: number;
   className?: string;
+  onGradingUpdate?: () => void;
 }
 
 export const TaskSubmissionReview = ({
   submission,
   maxScore,
   className,
+  onGradingUpdate,
 }: TaskSubmissionReviewProps) => {
-  const [newGradeSubmission, setNewGradeSubmission] = useState({
-    score: submission.gradering?.score || 0,
-    feedback: submission.gradering?.feedback || "",
-  });
+  const existingGrading = submission.gradering;
+  const [score, setScore] = useState<number>(existingGrading?.score || 0);
+  const [feedback, setFeedback] = useState<string>(
+    existingGrading?.feedback || "",
+  );
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
   const handleGradeSubmit = async () => {
     try {
-      console.log(newGradeSubmission);
-      if (!submission.gradering) {
-        await api.post(
-          `/inzendingen/${submission._id}/gradering`,
-          newGradeSubmission,
-        );
+      setIsSubmitting(true);
+
+      if (existingGrading) {
+        // Update bestaande gradering
+        await api.patch(`/graderingen/${existingGrading._id}`, {
+          score,
+          feedback,
+        });
       } else {
-        await api.patch(
-          `/graderingen/${submission.gradering._id}`,
-          newGradeSubmission,
-        );
+        // Maak nieuwe gradering aan
+        await api.post(`/inzendingen/${submission._id}/gradering`, {
+          score,
+          feedback,
+        });
       }
+
       toast.success("Beoordeling opgeslagen");
-      window.location.reload();
+      // Roep de callback aan om de parent component te updaten
+      if (onGradingUpdate) {
+        onGradingUpdate();
+      }
+      setIsSubmitting(false);
     } catch (error) {
       console.error("Error submitting grade:", error);
       toast.error(
         "Er is een fout opgetreden bij het opslaan van de beoordeling",
       );
+      setIsSubmitting(false);
     }
   };
+
+  // Update lokale state wanneer submission verandert
+  useEffect(() => {
+    if (existingGrading) {
+      setScore(existingGrading.score);
+      setFeedback(existingGrading.feedback);
+    }
+  }, [existingGrading]);
 
   return (
     <div className={className}>
@@ -76,47 +96,36 @@ export const TaskSubmissionReview = ({
               min="0"
               max={maxScore}
               step="0.1"
-              defaultValue={newGradeSubmission.score}
+              value={score}
               className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               onChange={(e) => {
-                const score = Math.min(
-                  Math.max(0, parseFloat(e.target.value)),
+                const newScore = Math.min(
+                  Math.max(0, parseFloat(e.target.value) || 0),
                   maxScore,
                 );
-                setNewGradeSubmission({ ...newGradeSubmission, score });
-                // handleGradeSubmit(
-                //   score,
-                //   submission.gradering?.[0]?.feedback || "",
-                // );
+                setScore(newScore);
               }}
             />
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium">Feedback</label>
             <textarea
-              defaultValue={newGradeSubmission.feedback}
+              value={feedback}
               className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-20 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               onChange={(e) => {
-                setNewGradeSubmission({
-                  ...newGradeSubmission,
-                  feedback: e.target.value,
-                });
-                // handleGradeSubmit(
-                //   submission.gradering?.[0]?.score || 0,
-                //   e.target.value,
-                // );
+                setFeedback(e.target.value);
               }}
             />
           </div>
-          <div className="col-span-full items-center text-center">
-            <Button
-              variant="outline"
-              className="mb-4"
-              onClick={handleGradeSubmit}
-            >
-              Gradeer
-            </Button>
-          </div>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <button
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 font-medium transition-colors disabled:opacity-50"
+            onClick={handleGradeSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Bezig met opslaan..." : "Beoordeling opslaan"}
+          </button>
         </div>
       </div>
     </div>

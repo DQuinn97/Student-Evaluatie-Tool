@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus, Trash } from "lucide-react";
+import { Plus, Trash, BookText } from "lucide-react";
 import {
   AccordionItem,
   AccordionTrigger,
@@ -21,6 +21,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useNavigate } from "react-router";
 
 type StudentSectionProps = {
   students: Student[];
@@ -37,6 +38,8 @@ export const StudentSection = ({
   onDeleteStudent,
   selectedClass,
 }: StudentSectionProps) => {
+  const navigate = useNavigate();
+
   const studentColumns = [
     {
       accessorKey: "naam",
@@ -66,29 +69,46 @@ export const StudentSection = ({
     {
       id: "actions",
       cell: ({ row }: { row: Row<Student> }) => (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Trash className="h-4 w-4" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Bevestig Verwijderen</AlertDialogTitle>
-              <AlertDialogDescription>
-                Weet je zeker dat je deze student wilt verwijderen uit de klas?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Annuleren</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDeleteStudent(row.original._id)}
-              >
-                Verwijderen
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (selectedClass) {
+                navigate(
+                  `/klassen/${selectedClass}/studenten/${row.original._id}/dagboek`,
+                );
+              }
+            }}
+            title="Bekijk stagedagboek"
+          >
+            <BookText className="h-4 w-4" />
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" title="Verwijder student">
+                <Trash className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Bevestig Verwijderen</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Weet je zeker dat je deze student wilt verwijderen uit de
+                  klas?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuleren</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => onDeleteStudent(row.original._id)}
+                >
+                  Verwijderen
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       ),
     },
   ];
