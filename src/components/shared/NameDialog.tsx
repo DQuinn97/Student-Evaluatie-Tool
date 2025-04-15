@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
@@ -94,9 +101,9 @@ export const NameDialog = ({
           </div>
         </div>
         <DialogFooter>
-          <Button 
-            type="submit" 
-            onClick={handleUpdateName} 
+          <Button
+            type="submit"
+            onClick={handleUpdateName}
             disabled={isUpdatingName || !firstName.trim() || !lastName.trim()}
           >
             {isUpdatingName ? "Bijwerken..." : "Opslaan"}

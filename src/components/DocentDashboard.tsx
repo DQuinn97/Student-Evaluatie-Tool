@@ -23,9 +23,14 @@ const DocentDashboard = () => {
           return;
         }
         setUserData(user);
-        
+
         // Check if user's name data is missing or empty
-        if (!user.naam || user.naam.trim() === '' || !user.achternaam || user.achternaam.trim() === '') {
+        if (
+          !user.naam ||
+          user.naam.trim() === "" ||
+          !user.achternaam ||
+          user.achternaam.trim() === ""
+        ) {
           setShowNameDialog(true);
         }
 
@@ -55,8 +60,8 @@ const DocentDashboard = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <NameDialog 
-        isOpen={showNameDialog} 
+      <NameDialog
+        isOpen={showNameDialog}
         onOpenChange={setShowNameDialog}
         userData={userData}
         onUserDataUpdate={setUserData}
