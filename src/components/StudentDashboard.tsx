@@ -6,6 +6,7 @@ import { DashboardCards } from "./dashboard/DashboardCards";
 import { DataTable } from "./shared/DataTable";
 import { FilterSection } from "./dashboard/FilterSection";
 import { PerformanceChart } from "./dashboard/PerformanceChart";
+import { NameDialog } from "./shared/NameDialog";
 import api from "../api";
 import { useNavigate } from "react-router";
 
@@ -19,6 +20,7 @@ const StudentDashboard = () => {
   const [type, setType] = useState<string | null>("alle");
   const [tasks, setTasks] = useState<any[]>([]);
   const [userData, setUserData] = useState<any>(null);
+  const [showNameDialog, setShowNameDialog] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,6 +31,11 @@ const StudentDashboard = () => {
           return;
         }
         setUserData(user);
+        
+        // Check if user's name data is missing or empty
+        if (!user.naam || user.naam.trim() === '' || !user.achternaam || user.achternaam.trim() === '') {
+          setShowNameDialog(true);
+        }
 
         const { data: classes } = await api.get("/klassen");
         if (classes && classes.length > 0) {
@@ -157,6 +164,15 @@ const StudentDashboard = () => {
 
   return (
     <div>
+      <NameDialog 
+        isOpen={showNameDialog} 
+        onOpenChange={setShowNameDialog}
+        userData={userData}
+        onUserDataUpdate={setUserData}
+        initialFirstName={userData.naam || ""}
+        initialLastName={userData.achternaam || ""}
+      />
+
       <h1 className="ml-4 text-4xl font-bold">
         {userData.naam ? `${userData.naam}'s Dashboard` : "Dashboard"}
       </h1>
