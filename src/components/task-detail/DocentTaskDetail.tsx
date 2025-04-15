@@ -148,11 +148,11 @@ export const DocentTaskDetail = ({
           status={task.inzendingen?.length > 0 ? "Ingeleverd" : "Open"}
           gottenPoints={
             task.inzendingen?.reduce(
-              (sum, inzending) => sum + (inzending.gradering?.[0]?.score ?? 0),
+              (sum, inzending) => sum + (inzending.gradering?.score ?? 0),
               0,
             ) / (task.inzendingen?.length || 1)
           }
-          totalPoints={task.weging}
+          totalPoints={task.maxScore ?? 100}
           isDocent={true}
           submittedCount={task.inzendingen?.length ?? 0}
           totalStudents={totalStudents}
@@ -164,7 +164,7 @@ export const DocentTaskDetail = ({
           type={task.type}
           beschrijving={task.beschrijving}
           deadline={task.deadline}
-          maxScore={task.weging}
+          maxScore={task.maxScore ?? 100}
         />
 
         <Separator className="my-8" />
@@ -181,13 +181,13 @@ export const DocentTaskDetail = ({
             </Button>
             <TaskSubmissionReview
               submission={task.inzendingen[selectedSubmission]}
-              maxScore={task.weging}
+              maxScore={task.maxScore ?? 100}
             />
           </div>
         ) : (
           <SubmissionsTable
             submissions={task.inzendingen}
-            maxScore={task.weging}
+            maxScore={task.maxScore ?? 100}
             onReviewClick={(index) => setSelectedSubmission(index)}
           />
         )}

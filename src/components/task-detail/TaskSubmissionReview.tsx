@@ -2,6 +2,9 @@ import { TaskSubmissionForm } from "./TaskSubmissionForm";
 import { toast } from "sonner";
 import api from "../../api";
 import { TaskSubmission } from "../../types";
+import { T } from "node_modules/react-router/dist/development/fog-of-war-BjgPfDmv.d.mts";
+import { useState } from "react";
+import { Button } from "../ui/button";
 
 interface TaskSubmissionReviewProps {
   submission: TaskSubmission & {
@@ -19,13 +22,24 @@ export const TaskSubmissionReview = ({
   maxScore,
   className,
 }: TaskSubmissionReviewProps) => {
-  const handleGradeSubmit = async (score: number, feedback: string) => {
+  const [newGradeSubmission, setNewGradeSubmission] = useState({
+    score: submission.gradering?.score || 0,
+    feedback: submission.gradering?.feedback || "",
+  });
+  const handleGradeSubmit = async () => {
     try {
-      await api.post(`/inzendingen/${submission._id}/gradering`, {
-        score,
-        maxscore: maxScore,
-        feedback,
-      });
+      console.log(newGradeSubmission);
+      if (!submission.gradering) {
+        await api.post(
+          `/inzendingen/${submission._id}/gradering`,
+          newGradeSubmission,
+        );
+      } else {
+        await api.patch(
+          `/graderingen/${submission.gradering._id}`,
+          newGradeSubmission,
+        );
+      }
       toast.success("Beoordeling opgeslagen");
       window.location.reload();
     } catch (error) {
@@ -56,40 +70,52 @@ export const TaskSubmissionReview = ({
         <h4 className="mb-2 text-lg font-semibold">Beoordeling</h4>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="mb-2 block text-sm font-medium">
-              Score (max {maxScore} punten)
-            </label>
+            <label className="mb-2 block text-sm font-medium">Score</label>
             <input
               type="number"
               min="0"
               max={maxScore}
               step="0.1"
-              defaultValue={submission.gradering?.[0]?.score}
+              defaultValue={newGradeSubmission.score}
               className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               onChange={(e) => {
                 const score = Math.min(
                   Math.max(0, parseFloat(e.target.value)),
                   maxScore,
                 );
-                handleGradeSubmit(
-                  score,
-                  submission.gradering?.[0]?.feedback || "",
-                );
+                setNewGradeSubmission({ ...newGradeSubmission, score });
+                // handleGradeSubmit(
+                //   score,
+                //   submission.gradering?.[0]?.feedback || "",
+                // );
               }}
             />
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium">Feedback</label>
             <textarea
-              defaultValue={submission.gradering?.[0]?.feedback}
+              defaultValue={newGradeSubmission.feedback}
               className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-20 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               onChange={(e) => {
-                handleGradeSubmit(
-                  submission.gradering?.[0]?.score || 0,
-                  e.target.value,
-                );
+                setNewGradeSubmission({
+                  ...newGradeSubmission,
+                  feedback: e.target.value,
+                });
+                // handleGradeSubmit(
+                //   submission.gradering?.[0]?.score || 0,
+                //   e.target.value,
+                // );
               }}
             />
+          </div>
+          <div className="col-span-full items-center text-center">
+            <Button
+              variant="outline"
+              className="mb-4"
+              onClick={handleGradeSubmit}
+            >
+              Gradeer
+            </Button>
           </div>
         </div>
       </div>

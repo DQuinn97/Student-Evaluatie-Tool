@@ -44,7 +44,7 @@ export const CreateTaskForm = ({
     titel: initialTask?.titel || "",
     beschrijving: initialTask?.beschrijving || "",
     deadline: initialTask?.deadline || "",
-    weging: initialTask?.weging || 1,
+    weging: initialTask?.weging || 0,
     type: initialTask?.type || "taak",
     vak: initialTask?.vak || "",
     isGepubliceerd: initialTask?.isGepubliceerd || false,
@@ -110,8 +110,8 @@ export const CreateTaskForm = ({
         Math.max(
           0,
           typeof newTask.weging === "string"
-            ? parseFloat(newTask.weging)
-            : newTask.weging,
+            ? parseFloat(newTask.weging) / 100
+            : newTask.weging / 100,
         ),
         1,
       );
@@ -289,16 +289,18 @@ export const CreateTaskForm = ({
         </div>
 
         <div>
-          <Label htmlFor="weging">Maximale score</Label>
+          <Label htmlFor="weging">Weging</Label>
           <Input
             id="weging"
             type="number"
             min="0"
-            max="1"
-            step="0.1"
+            max="100"
             value={newTask.weging}
             onChange={(e) =>
-              setNewTask({ ...newTask, weging: parseFloat(e.target.value) })
+              setNewTask({
+                ...newTask,
+                weging: parseFloat(e.target.value),
+              })
             }
             required
           />

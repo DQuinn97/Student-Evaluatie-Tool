@@ -6,10 +6,10 @@ export type Task = {
   weging: number;
   inzendingen: Array<{
     _id: string;
-    gradering: Array<{
+    gradering: {
       score: number;
       maxscore: number;
-    }>;
+    };
   }>;
   klasgroep: {
     _id: string;

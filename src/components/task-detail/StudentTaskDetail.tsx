@@ -46,8 +46,8 @@ export const StudentTaskDetail = ({ task }: StudentTaskDetailProps) => {
       <TaskMetrics
         deadline={task.deadline}
         status={isSubmitted ? "Ingeleverd" : "Open"}
-        gottenPoints={submission?.gradering?.[0]?.score}
-        totalPoints={submission?.gradering?.[0]?.maxscore ?? 100}
+        gottenPoints={submission?.gradering?.score}
+        totalPoints={submission?.gradering?.maxscore ?? 100}
       />
 
       <TaskDescription
@@ -68,8 +68,8 @@ export const StudentTaskDetail = ({ task }: StudentTaskDetailProps) => {
         isDocent={false}
       />
 
-      {submission?.gradering?.[0]?.feedback && (
-        <TaskFeedback feedback={submission.gradering[0].feedback} />
+      {submission?.gradering?.feedback && (
+        <TaskFeedback feedback={submission.gradering.feedback} />
       )}
     </div>
   );

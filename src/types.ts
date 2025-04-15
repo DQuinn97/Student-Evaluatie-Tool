@@ -43,6 +43,7 @@ export interface TaskDetail {
   beschrijving: string;
   deadline: string;
   weging: number;
+  maxScore: number;
   isGepubliceerd: boolean;
   bijlagen: string[];
   klasgroep: {
@@ -70,11 +71,12 @@ export interface TaskSubmission {
   live: string;
   beschrijving: string;
   bijlagen: string[];
-  gradering?: Array<{
+  gradering?: {
+    _id: string;
     feedback: string;
     score: number;
     maxscore: number;
-  }>;
+  };
 }
 
 export interface TaskSubmissionFormProps {

@@ -45,14 +45,14 @@ export const TaskSection = ({
 
   const calculateAverageScore = (task: Task) => {
     const gradedSubmissions = task.inzendingen.filter(
-      (inzending) => inzending.gradering && inzending.gradering.length > 0,
+      (inzending) => inzending.gradering,
     );
 
     if (gradedSubmissions.length === 0) return null;
 
     const totalScore = gradedSubmissions.reduce((acc, inzending) => {
-      const graderingScore = inzending.gradering[0]?.score || 0;
-      const graderingMaxScore = inzending.gradering[0]?.maxscore || task.weging;
+      const graderingScore = inzending.gradering?.score || 0;
+      const graderingMaxScore = inzending.gradering?.maxscore || task.weging;
       return acc + (graderingScore / graderingMaxScore) * 100;
     }, 0);
 
