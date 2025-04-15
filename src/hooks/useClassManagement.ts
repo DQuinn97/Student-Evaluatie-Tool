@@ -51,7 +51,11 @@ export const useClassManagement = () => {
   const fetchStudents = async () => {
     try {
       const { data } = await api.get(`/klassen/${selectedClass}`);
-      setStudents(data.studenten || []);
+      // Filter docenten uit de studentenlijst
+      const filteredStudents = (data.studenten || []).filter(
+        (student: Student) => !student.isDocent,
+      );
+      setStudents(filteredStudents);
     } catch (error) {
       console.error("Error fetching students:", error);
       setError("Er is een fout opgetreden bij het ophalen van de studenten");
@@ -128,7 +132,11 @@ export const useClassManagement = () => {
             studentId,
           });
           const { data } = await api.get(`/klassen/${selectedClass}`);
-          setStudents(data.studenten || []);
+          // Filter docenten uit de lijst na toevoegen van een student
+          const filteredStudents = (data.studenten || []).filter(
+            (student: Student) => !student.isDocent,
+          );
+          setStudents(filteredStudents);
         } catch (error) {
           console.error("Error adding student:", error);
           setError(

@@ -12,6 +12,7 @@ export type Student = {
   achternaam: string;
   email: string;
   foto?: string;
+  isDocent?: boolean;
 };
 
 export type Task = {

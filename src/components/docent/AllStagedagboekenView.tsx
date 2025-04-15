@@ -65,30 +65,33 @@ export const AllStagedagboekenView = () => {
 
         // Get stagedagboek info for each student
         const studentsWithStageInfo = await Promise.all(
-          (data.studenten || []).map(async (student: Student) => {
-            try {
-              const { data: dagboek } = await api.get(
-                `/dagboek/${selectedClass}/${student._id}`,
-              );
+          // Filter eerst docenten uit de lijst van studenten
+          (data.studenten || [])
+            .filter((student: Student) => !student.isDocent)
+            .map(async (student: Student) => {
+              try {
+                const { data: dagboek } = await api.get(
+                  `/dagboek/${selectedClass}/${student._id}`,
+                );
 
-              // Check if the stagedagboek has any entries and count them
-              const entryCount = dagboek?.stagedagen?.length || 0;
-              const hasStagedagboek = entryCount > 0;
+                // Check if the stagedagboek has any entries and count them
+                const entryCount = dagboek?.stagedagen?.length || 0;
+                const hasStagedagboek = entryCount > 0;
 
-              return {
-                ...student,
-                hasStagedagboek,
-                entryCount,
-              };
-            } catch (error) {
-              // If the API returns an error (likely 404), the student has no stagedagboek
-              return {
-                ...student,
-                hasStagedagboek: false,
-                entryCount: 0,
-              };
-            }
-          }),
+                return {
+                  ...student,
+                  hasStagedagboek,
+                  entryCount,
+                };
+              } catch (error) {
+                // If the API returns an error (likely 404), the student has no stagedagboek
+                return {
+                  ...student,
+                  hasStagedagboek: false,
+                  entryCount: 0,
+                };
+              }
+            }),
         );
 
         setStudents(studentsWithStageInfo);
