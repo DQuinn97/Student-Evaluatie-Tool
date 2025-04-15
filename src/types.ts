@@ -20,12 +20,13 @@ export type Task = {
   type: string;
   deadline: string;
   weging: number;
+  maxScore: number;
   inzendingen: Array<{
     _id: string;
-    gradering: Array<{
+    gradering: {
       score: number;
-      maxscore: number;
-    }>;
+      feedback?: string | undefined;
+    };
   }>;
   klasgroep: {
     _id: string;

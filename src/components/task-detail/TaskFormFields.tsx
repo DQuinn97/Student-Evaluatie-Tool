@@ -142,6 +142,28 @@ export const DeadlineField = ({
 );
 
 // Weging veld component
+export const WeightField = ({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (value: number) => void;
+}) => (
+  <div>
+    <Label htmlFor="weging">Weging</Label>
+    <Input
+      id="weging"
+      type="number"
+      min="0"
+      max="100"
+      value={value}
+      onChange={(e) => onChange(parseFloat(e.target.value))}
+      required
+    />
+  </div>
+);
+
+// MaxScore veld component
 export const ScoreField = ({
   value,
   onChange,
@@ -155,8 +177,6 @@ export const ScoreField = ({
       id="weging"
       type="number"
       min="0"
-      max="1"
-      step="0.1"
       value={value}
       onChange={(e) => onChange(parseFloat(e.target.value))}
       required

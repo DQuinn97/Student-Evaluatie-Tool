@@ -20,13 +20,13 @@ type Task = {
   titel: string;
   type: string;
   deadline: string;
+  maxScore: number;
   inzendingen: Array<{
     _id: string;
-    gradering: Array<{
+    gradering: {
       score: number;
-      maxscore: number;
       feedback?: string;
-    }>;
+    };
   }>;
 };
 
@@ -71,7 +71,7 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
       (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
     )
     .map((task) => {
-      const graderingData = task.inzendingen?.[0]?.gradering?.[0];
+      const graderingData = task.inzendingen?.[0]?.gradering;
       return {
         _id: task._id,
         taakId: task._id, // Use the full MongoDB ObjectId
@@ -82,7 +82,7 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
         inzendingen: task.inzendingen,
         status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
         gottenPoints: graderingData?.score ?? 0,
-        totalPoints: graderingData ? graderingData.maxscore : 0,
+        totalPoints: task.maxScore ?? 0,
         klas: classData.naam,
         feedback: graderingData?.feedback || "",
       };
@@ -95,6 +95,7 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
     type: task.type,
     deadline: task.deadline,
     weging: task.totalPoints, // Gebruik totalPoints als weging
+    maxScore: task.totalPoints,
     inzendingen: task.inzendingen,
     klasgroep: {
       _id: classData._id,
@@ -111,9 +112,9 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
       (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
     )
     .map((task) => {
-      const hasGradering = task.inzendingen?.[0]?.gradering?.[0];
+      const hasGradering = task.inzendingen?.[0]?.gradering;
       const score = hasGradering?.score ?? 0;
-      const maxScore = hasGradering ? hasGradering.maxscore : 0;
+      const maxScore = hasGradering ? task.maxScore : 100;
 
       if (!hasGradering) return null;
 

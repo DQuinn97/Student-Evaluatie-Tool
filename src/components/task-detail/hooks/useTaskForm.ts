@@ -7,6 +7,7 @@ interface TaskFormState {
   beschrijving: string;
   deadline: string;
   weging: number;
+  maxScore: number;
   type: string;
   vak: string;
   isGepubliceerd: boolean;
@@ -21,6 +22,7 @@ interface UseTaskFormProps {
     beschrijving: string;
     deadline: string;
     weging: number;
+    maxScore: number;
     type: string;
     vak?: string;
     isGepubliceerd: boolean;
@@ -43,7 +45,8 @@ export const useTaskForm = ({
     titel: initialTask?.titel || "",
     beschrijving: initialTask?.beschrijving || "",
     deadline: initialTask?.deadline || "",
-    weging: initialTask?.weging || 1,
+    weging: initialTask?.weging || 0,
+    maxScore: initialTask?.maxScore || 100,
     type: initialTask?.type || "taak",
     vak: initialTask?.vak || "",
     isGepubliceerd: initialTask?.isGepubliceerd || false,

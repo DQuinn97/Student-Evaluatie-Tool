@@ -52,7 +52,7 @@ export const TaskSection = ({
 
     const totalScore = gradedSubmissions.reduce((acc, inzending) => {
       const graderingScore = inzending.gradering?.score || 0;
-      const graderingMaxScore = inzending.gradering?.maxscore || task.weging;
+      const graderingMaxScore = task.maxScore || 100;
       return acc + (graderingScore / graderingMaxScore) * 100;
     }, 0);
 

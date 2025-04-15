@@ -10,6 +10,7 @@ import {
   SubjectField,
   AttachmentsField,
   PublishField,
+  WeightField,
 } from "./TaskFormFields";
 
 interface CreateTaskFormProps {
@@ -22,6 +23,7 @@ interface CreateTaskFormProps {
     beschrijving: string;
     deadline: string;
     weging: number;
+    maxScore: number;
     type: string;
     vak?: string;
     isGepubliceerd: boolean;
@@ -93,9 +95,14 @@ export const CreateTaskForm = ({
           onChange={(value) => updateTaskData("deadline", value)}
         />
 
-        <ScoreField
+        <WeightField
           value={taskData.weging}
           onChange={(value) => updateTaskData("weging", value)}
+        />
+
+        <ScoreField
+          value={taskData.maxScore}
+          onChange={(value) => updateTaskData("maxScore", value)}
         />
 
         <SubjectField
