@@ -10,6 +10,7 @@ import { CreateTaskForm } from "./CreateTaskForm";
 import { SubmissionsTable } from "./SubmissionsTable";
 import { TaskSubmissionReview } from "./TaskSubmissionReview";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import api from "../../api";
 
 interface DocentTaskDetailProps {
@@ -32,12 +33,19 @@ export const DocentTaskDetail = ({
     null,
   );
   const [totalStudents, setTotalStudents] = useState<number>(0);
+  const [currentTask, setCurrentTask] = useState(task);
+
+  useEffect(() => {
+    setCurrentTask(task);
+  }, [task]);
 
   useEffect(() => {
     const fetchTotalStudents = async () => {
-      if (task?.klasgroep?._id) {
+      if (currentTask?.klasgroep?._id) {
         try {
-          const { data } = await api.get(`/klassen/${task.klasgroep._id}`);
+          const { data } = await api.get(
+            `/klassen/${currentTask.klasgroep._id}`,
+          );
           setTotalStudents(data.studenten?.length ?? 0);
         } catch (error) {
           console.error("Error fetching total students:", error);
@@ -47,9 +55,22 @@ export const DocentTaskDetail = ({
     };
 
     fetchTotalStudents();
-  }, [task?.klasgroep?._id]);
+  }, [currentTask?.klasgroep?._id]);
 
-  if (!task && !isNewTask) {
+  const handleGradingUpdate = async () => {
+    if (!currentTask?._id) return;
+
+    try {
+      // Haal de bijgewerkte taakgegevens op
+      const { data } = await api.get(`/taken/${currentTask._id}`);
+      setCurrentTask(data);
+    } catch (error) {
+      console.error("Error refreshing task data:", error);
+      toast.error("Kon de taakgegevens niet verversen");
+    }
+  };
+
+  if (!currentTask && !isNewTask) {
     return null;
   }
 
@@ -72,7 +93,7 @@ export const DocentTaskDetail = ({
           <h1 className="text-3xl font-bold">Nieuwe taak aanmaken</h1>
           <div className="mt-2 flex flex-wrap gap-2">
             <p className="text-muted-foreground">
-              Klas: {task?.klasgroep.naam}
+              Klas: {currentTask?.klasgroep.naam}
             </p>
           </div>
         </div>
@@ -86,7 +107,7 @@ export const DocentTaskDetail = ({
   }
 
   // For editing existing task
-  if (isEditMode && task && klasId) {
+  if (isEditMode && currentTask && klasId) {
     return (
       <div className="container mx-auto p-6">
         <div className="mb-6">
@@ -103,21 +124,23 @@ export const DocentTaskDetail = ({
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Taak bewerken</h1>
           <div className="mt-2 flex flex-wrap gap-2">
-            <p className="text-muted-foreground">Klas: {task.klasgroep.naam}</p>
+            <p className="text-muted-foreground">
+              Klas: {currentTask.klasgroep.naam}
+            </p>
           </div>
         </div>
 
         <CreateTaskForm
           klasId={klasId}
           onTaskCreated={onTaskCreated || (() => {})}
-          initialTask={task}
+          initialTask={currentTask}
         />
       </div>
     );
   }
 
   // For viewing existing task
-  if (task) {
+  if (currentTask) {
     return (
       <div className="container mx-auto p-6">
         <div className="mb-6 flex items-center justify-between">
@@ -130,7 +153,7 @@ export const DocentTaskDetail = ({
           </Button>
           <Button
             variant="outline"
-            onClick={() => navigate(`/docent/taken/${task._id}/edit`)}
+            onClick={() => navigate(`/docent/taken/${currentTask._id}/edit`)}
           >
             <Edit className="mr-2 h-4 w-4" />
             Bewerken
@@ -138,33 +161,33 @@ export const DocentTaskDetail = ({
         </div>
 
         <TaskHeader
-          lecture={task.titel}
-          klas={task.klasgroep.naam}
-          type={task.type}
+          lecture={currentTask.titel}
+          klas={currentTask.klasgroep.naam}
+          type={currentTask.type}
         />
 
         <TaskMetrics
-          deadline={task.deadline}
-          status={task.inzendingen?.length > 0 ? "Ingeleverd" : "Open"}
+          deadline={currentTask.deadline}
+          status={currentTask.inzendingen?.length > 0 ? "Ingeleverd" : "Open"}
           gottenPoints={
-            task.inzendingen?.reduce(
+            currentTask.inzendingen?.reduce(
               (sum, inzending) => sum + (inzending.gradering?.[0]?.score ?? 0),
               0,
-            ) / (task.inzendingen?.length || 1)
+            ) / (currentTask.inzendingen?.length || 1)
           }
-          totalPoints={task.weging}
+          totalPoints={currentTask.weging}
           isDocent={true}
-          submittedCount={task.inzendingen?.length ?? 0}
+          submittedCount={currentTask.inzendingen?.length ?? 0}
           totalStudents={totalStudents}
         />
 
         <TaskDescription
-          id={task._id}
-          klas={task.klasgroep.naam}
-          type={task.type}
-          beschrijving={task.beschrijving}
-          deadline={task.deadline}
-          maxScore={task.weging}
+          id={currentTask._id}
+          klas={currentTask.klasgroep.naam}
+          type={currentTask.type}
+          beschrijving={currentTask.beschrijving}
+          deadline={currentTask.deadline}
+          maxScore={currentTask.weging}
         />
 
         <Separator className="my-8" />
@@ -180,14 +203,15 @@ export const DocentTaskDetail = ({
               Terug naar overzicht
             </Button>
             <TaskSubmissionReview
-              submission={task.inzendingen[selectedSubmission]}
-              maxScore={task.weging}
+              submission={currentTask.inzendingen[selectedSubmission]}
+              maxScore={currentTask.weging}
+              onGradingUpdate={handleGradingUpdate}
             />
           </div>
         ) : (
           <SubmissionsTable
-            submissions={task.inzendingen}
-            maxScore={task.weging}
+            submissions={currentTask.inzendingen}
+            maxScore={currentTask.weging}
             onReviewClick={(index) => setSelectedSubmission(index)}
           />
         )}

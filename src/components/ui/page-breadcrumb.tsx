@@ -32,6 +32,7 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
     new: "Nieuwe Taak",
     ingave: "Nieuwe Ingave",
     edit: "Taak Bewerken",
+    dagboek: "Stagedagboek",
   };
 
   // Define the types of detail pages and their configurations
@@ -52,13 +53,6 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
       titleField: "naam",
     },
   };
-
-  // Check if we're editing a stagedagboek entry (URL pattern: /student/stagedagboek/ingave/{id})
-  const isEditingStagedagboek =
-    pathSegments.includes("stagedagboek") &&
-    pathSegments.includes("ingave") &&
-    pathSegments.length > 3 &&
-    pathSegments[pathSegments.indexOf("ingave") + 1] !== undefined;
 
   useEffect(() => {
     const fetchDetailTitle = async () => {
@@ -101,61 +95,72 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
     fetchDetailTitle();
   }, [pathSegments]);
 
-  const filteredSegments = pathSegments.filter(
-    (segment) => segment !== "student",
-  );
+  // Helper function to check if a segment looks like an ID (MongoDB ObjectId)
+  const isIdLike = (segment: string) => {
+    // Check if segment looks like a MongoDB ObjectId
+    return /^[0-9a-f]{24}$/i.test(segment);
+  };
 
-  const breadcrumbItems: BreadcrumbItem[] = filteredSegments
-    .map((segment, index) => {
-      const isDetailPage =
-        detailTitle &&
-        segment === filteredSegments[filteredSegments.length - 1];
+  // Check if we're editing a stagedagboek entry (URL pattern: /student/stagedagboek/ingave/{id})
+  const isEditingEntry =
+    pathSegments.includes("ingave") &&
+    pathSegments.length > 3 &&
+    isIdLike(pathSegments[pathSegments.indexOf("ingave") + 1]);
 
-      // Handle special cases for paths
-      let path;
-      if (pathSegments.includes("docent")) {
-        path = `/${pathSegments.slice(0, index + 1).join("/")}`;
-      } else if (
-        segment === "ingave" &&
-        filteredSegments[index - 1] === "stagedagboek"
-      ) {
-        path = "/student/stagedagboek/ingave";
-      } else if (segment === "stagedagboek") {
-        path = "/student/stagedagboek";
-      } else {
-        path = `/${pathSegments.slice(0, index + 2).join("/")}`; // Include 'student' in the path
-      }
+  // Process path segments to create breadcrumb items
+  const processedSegments = [];
+  let currentPath = "";
 
-      // Handle the label for this segment
-      let label;
+  for (let i = 0; i < pathSegments.length; i++) {
+    const segment = pathSegments[i];
+    currentPath += `/${segment}`;
 
-      // For ID segments when editing stagedagboek, skip (return null)
-      if (
-        isEditingStagedagboek &&
-        index === filteredSegments.length - 1 &&
-        segment !== "ingave"
-      ) {
-        return null;
-      }
+    // Skip segments that look like IDs
+    if (isIdLike(segment)) {
+      continue;
+    }
 
-      if (isDetailPage) {
-        label = detailTitle;
-      } else if (segment === "ingave" && isEditingStagedagboek) {
-        label = "Bewerk Ingave";
-      } else if (segment in specialRoutes) {
-        label = specialRoutes[segment as keyof typeof specialRoutes];
-      } else {
-        label =
-          pathLabels[segment] ||
-          segment.charAt(0).toUpperCase() + segment.slice(1);
-      }
+    // Handle special cases
+    if (
+      segment === "studenten" &&
+      i < pathSegments.length - 1 &&
+      isIdLike(pathSegments[i + 1])
+    ) {
+      // Skip the "studenten" segment and its following ID
+      i++; // Skip the ID in the next iteration
+      continue;
+    }
 
-      return {
-        label,
-        path,
-      };
-    })
-    .filter(Boolean) as BreadcrumbItem[];
+    // For special named routes that come after IDs
+    if (segment === "dagboek" && i > 0 && isIdLike(pathSegments[i - 1])) {
+      processedSegments.push({
+        label: "Stagedagboek",
+        path: currentPath,
+      });
+      continue;
+    }
+
+    let label =
+      pathLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+
+    // If we're at the "ingave" segment and this is an edit operation
+    if (segment === "ingave" && isEditingEntry) {
+      label = "Bewerk Ingave";
+    }
+    // Check if this is a detail page
+    else if (
+      i === pathSegments.length - 1 &&
+      detailTitle &&
+      !isIdLike(segment)
+    ) {
+      label = detailTitle;
+    }
+
+    processedSegments.push({
+      label,
+      path: currentPath,
+    });
+  }
 
   return (
     <Breadcrumb>
@@ -165,11 +170,11 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
             {userName}
           </BreadcrumbPage>
         </BreadcrumbItem>
-        {breadcrumbItems.map((crumb: BreadcrumbItem, index: number) => (
-          <Fragment key={crumb.path}>
+        {processedSegments.map((crumb, index) => (
+          <Fragment key={`${crumb.path}-${index}`}>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              {index === breadcrumbItems.length - 1 ? (
+              {index === processedSegments.length - 1 ? (
                 <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>

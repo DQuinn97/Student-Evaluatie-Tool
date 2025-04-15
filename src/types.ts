@@ -71,6 +71,7 @@ export interface TaskSubmission {
   beschrijving: string;
   bijlagen: string[];
   gradering?: Array<{
+    _id: string;
     feedback: string;
     score: number;
     maxscore: number;

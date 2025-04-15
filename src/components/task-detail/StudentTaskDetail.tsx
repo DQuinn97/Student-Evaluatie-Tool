@@ -46,7 +46,7 @@ export const StudentTaskDetail = ({ task }: StudentTaskDetailProps) => {
         deadline={task.deadline}
         status={isSubmitted ? "Ingeleverd" : "Open"}
         gottenPoints={submission?.gradering?.[0]?.score ?? 0}
-        totalPoints={task.weging}
+        totalPoints={submission?.gradering?.[0]?.maxscore ?? 0}
       />
 
       <TaskDescription
