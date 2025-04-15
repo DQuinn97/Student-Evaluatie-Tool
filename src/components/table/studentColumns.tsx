@@ -12,7 +12,7 @@ import { Ellipsis } from "lucide-react";
 import { Link } from "react-router";
 
 export type StudentRow = {
-  taakId: string;
+  _id: string;
   lecture: string;
   type: string;
   klas?: string;
@@ -108,10 +108,21 @@ export const studentColumns = (isDocent: boolean): ColumnDef<StudentRow>[] => [
       const percentage = total > 0 ? ((points / total) * 100).toFixed(1) : 0;
       return (
         <div className="flex items-center gap-2">
-          <span>
-            {points}/{total}
-          </span>
-          <span className="text-muted-foreground text-sm">({percentage}%)</span>
+          {hasScore && (
+            <>
+              <span>
+                {points}/{total}
+              </span>
+              <span className="text-muted-foreground text-sm">
+                ({percentage}%)
+              </span>
+            </>
+          )}
+          {!hasScore && (
+            <>
+              <span>- / -</span>
+            </>
+          )}
         </div>
       );
     },
@@ -138,7 +149,7 @@ export const studentColumns = (isDocent: boolean): ColumnDef<StudentRow>[] => [
           <DropdownMenuLabel>Acties</DropdownMenuLabel>
           <DropdownMenuItem asChild>
             <Link
-              to={`/student/taken/${row.original.taakId}`}
+              to={`/student/taken/${row.original._id}`}
               className="block w-full"
             >
               Bekijk in detail

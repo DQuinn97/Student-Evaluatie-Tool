@@ -47,7 +47,7 @@ export const StudentTaskDetail = ({ task }: StudentTaskDetailProps) => {
         deadline={task.deadline}
         status={isSubmitted ? "Ingeleverd" : "Open"}
         gottenPoints={submission?.gradering?.score}
-        totalPoints={submission?.gradering?.maxscore ?? 100}
+        totalPoints={task.maxScore}
       />
 
       <TaskDescription
@@ -56,7 +56,7 @@ export const StudentTaskDetail = ({ task }: StudentTaskDetailProps) => {
         type={task.type}
         beschrijving={task.beschrijving}
         deadline={task.deadline}
-        maxScore={task.weging}
+        maxScore={task.maxScore}
       />
 
       <Separator className="my-8" />
