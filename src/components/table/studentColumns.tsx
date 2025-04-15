@@ -10,19 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Ellipsis } from "lucide-react";
 import { Link } from "react-router";
-
-export type StudentRow = {
-  taakId: string;
-  lecture: string;
-  type: string;
-  klas?: string;
-  deadline: string;
-  status: string;
-  hasGradering: boolean;
-  gottenPoints: number;
-  totalPoints: number;
-  feedback: string;
-};
+import { StudentRow } from "@/types";
 
 export const studentColumns = (isDocent: boolean): ColumnDef<StudentRow>[] => [
   {
@@ -138,7 +126,7 @@ export const studentColumns = (isDocent: boolean): ColumnDef<StudentRow>[] => [
           <DropdownMenuLabel>Acties</DropdownMenuLabel>
           <DropdownMenuItem asChild>
             <Link
-              to={`/student/taken/${row.original.taakId}`}
+              to={`/student/taken/${row.original._id}`}
               className="block w-full"
             >
               Bekijk in detail

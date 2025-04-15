@@ -5,7 +5,10 @@ import {
   PaginationState,
   VisibilityState,
 } from "@tanstack/react-table";
+import { z } from "zod";
+import { UseFormReturn } from "react-hook-form";
 
+// ===== User Types =====
 export type Student = {
   _id: string;
   naam: string;
@@ -15,6 +18,23 @@ export type Student = {
   isDocent?: boolean;
 };
 
+export interface ProfileData {
+  id: string;
+  naam: string;
+  achternaam: string;
+  gsm: string;
+  foto: string;
+  email: string;
+}
+
+// ===== Class/Group Types =====
+export type Class = {
+  _id: string;
+  naam: string;
+  studenten?: Student[];
+};
+
+// ===== Task Types =====
 export type Task = {
   _id: string;
   titel: string;
@@ -33,17 +53,6 @@ export type Task = {
     naam: string;
   };
 };
-
-export type Class = {
-  _id: string;
-  naam: string;
-  studenten?: Student[];
-};
-
-export type DeleteItem = {
-  type: "task" | "student";
-  id: string;
-} | null;
 
 export interface TaskDetail {
   _id: string;
@@ -97,24 +106,6 @@ export interface TaskSubmissionFormProps {
   isDocent?: boolean;
 }
 
-export interface Entry {
-  _id: string;
-  datum: string;
-  voormiddag: string;
-  namiddag: string;
-  tools: string;
-  resultaat: string;
-}
-
-export interface ProfileData {
-  id: string;
-  naam: string;
-  achternaam: string;
-  gsm: string;
-  foto: string;
-  email: string;
-}
-
 export interface TaskDescriptionProps {
   id: string;
   klas: string;
@@ -130,54 +121,34 @@ export interface TaskHeaderProps {
   type: string;
 }
 
-export interface FilterSectionProps {
-  klas: string | null;
-  setKlas: (value: string | null) => void;
-  type: string | null;
-  setType: (value: string | null) => void;
-  tasks: Task[];
-  isDocent: boolean;
+export type StudentRow = {
+  _id: string;
+  lecture: string;
+  type: string;
+  klas?: string;
+  deadline: string;
+  status: string;
+  hasGradering: boolean;
+  gottenPoints: number;
+  totalPoints: number;
+  feedback: string;
+};
+
+export type DeleteItem = {
+  type: "task" | "student";
+  id: string;
+} | null;
+
+// ===== Stagedagboek Types =====
+export interface Entry {
+  _id: string;
+  datum: string;
+  voormiddag: string;
+  namiddag: string;
+  tools: string;
+  resultaat: string;
 }
 
-export interface NavItem {
-  label: string;
-  path: string;
-  children?: NavItem[];
-}
-
-export interface RouteConfig {
-  path: string;
-  label: string;
-  element?: React.ReactNode;
-  children?: RouteConfig[];
-}
-
-export interface DataTableProps {
-  table: ReactTable<any>;
-  filterColumn?: string;
-  filterPlaceholder?: string;
-  showRowSelection?: boolean;
-  emptyMessage?: string;
-}
-
-export interface TableState {
-  sorting: SortingState;
-  columnFilters: ColumnFiltersState;
-  columnVisibility: VisibilityState;
-  pagination: PaginationState;
-  setSorting: (value: SortingState) => void;
-  setColumnFilters: (value: ColumnFiltersState) => void;
-  setColumnVisibility: (value: VisibilityState) => void;
-  setPagination: (value: PaginationState) => void;
-}
-
-export interface UseTableConfigProps<TData> {
-  data: TData[];
-  columns: any[];
-  pageSize?: number;
-}
-
-// Stagedagboek types
 export interface StagedagboekHeaderProps {
   title: string;
   isDocent: boolean;
@@ -202,9 +173,6 @@ export interface StagedagboekViewProps {
 }
 
 // Form schema for stagedagboek
-import { z } from "zod";
-import { UseFormReturn } from "react-hook-form";
-
 export const StagedagboekFormSchema = z.object({
   date: z.date({
     required_error: "Een datum is verplicht.",
@@ -221,3 +189,52 @@ export type StagedagboekFormFieldsProps = {
   setDate: (date: Date | undefined) => void;
   isEditMode?: boolean;
 };
+
+// ===== UI Component Types =====
+export interface FilterSectionProps {
+  klas: string | null;
+  setKlas: (value: string | null) => void;
+  type: string | null;
+  setType: (value: string | null) => void;
+  tasks: Task[];
+  isDocent: boolean;
+}
+
+export interface NavItem {
+  label: string;
+  path: string;
+  children?: NavItem[];
+}
+
+export interface RouteConfig {
+  path: string;
+  label: string;
+  element?: React.ReactNode;
+  children?: RouteConfig[];
+}
+
+// ===== Table Component Types =====
+export interface DataTableProps {
+  table: ReactTable<any>;
+  filterColumn?: string;
+  filterPlaceholder?: string;
+  showRowSelection?: boolean;
+  emptyMessage?: string;
+}
+
+export interface TableState {
+  sorting: SortingState;
+  columnFilters: ColumnFiltersState;
+  columnVisibility: VisibilityState;
+  pagination: PaginationState;
+  setSorting: (value: SortingState) => void;
+  setColumnFilters: (value: ColumnFiltersState) => void;
+  setColumnVisibility: (value: VisibilityState) => void;
+  setPagination: (value: PaginationState) => void;
+}
+
+export interface UseTableConfigProps<TData> {
+  data: TData[];
+  columns: any[];
+  pageSize?: number;
+}
