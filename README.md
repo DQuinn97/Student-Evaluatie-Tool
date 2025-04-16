@@ -1,54 +1,97 @@
-# React + TypeScript + Vite
+# Student Evaluatie Tool
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Een moderne web-applicatie om het beheer van taken, toetsen en stagedagboeken voor docenten en studenten te vereenvoudigen. Dit project is ontwikkeld door [Matti](https://github.com/MattiVboiii) en [Quinten](https://github.com/DQuinn97).
 
-Currently, two official plugins are available:
+## Projectbeschrijving
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Deze applicatie biedt docenten en studenten een gebruiksvriendelijk platform om het beheer van taken en toetsen efficiënter te maken. Met een moderne technologie-stack en een goed gestructureerd systeem zorgt de applicatie voor een naadloze ervaring voor beide gebruikersgroepen. De toevoeging van het stagedagboek stelt studenten in staat om hun stage-ervaringen te documenteren en eenvoudig te beheren.
 
-## Expanding the ESLint configuration
+## Functionaliteiten
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Algemeen
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **Gebruikersbeheer**: Registratie, inloggen, profielbeheer met foto upload
+- **Responsief ontwerp**: Volledig bruikbaar op desktop en mobiele apparaten
+- **Donkere/lichte modus**: Aanpasbare UI-thema's voor gebruikerscomfort
+
+### Voor Studenten
+
+- **Dashboard**: Overzicht van taken/toetsen met voortgang en statistieken
+- **Taakbeheer**: Inzien, indienen en bijlagen uploaden bij taken
+- **Stagedagboek**: Dagelijkse stage-ervaringen documenteren en bijhouden
+- **Stageverslag**: Reflecteren op stage-ervaring met uitgebreide evaluatie
+
+### Voor Docenten
+
+- **Klasgroepbeheer**: Aanmaken en beheren van klassen en studenten
+- **Taakbeheer**: Creëren, publiceren en beoordelen van taken/toetsen
+- **Inzendingenbeheer**: Beoordeling van studenteninzendingen met feedback
+- **Stagedagboekbeoordeling**: Inzien en beoordelen van studentenstagedagboeken
+
+## Technische Stack
+
+### Frontend (deze repository)
+
+- **Framework**: React + TypeScript
+- **Build tool**: Vite voor snelle ontwikkeling en optimale productiebouwbestanden
+- **UI Components**: Eigen component library gebaseerd op Shadcn/UI
+- **Styling**: Tailwind CSS voor responsive design
+- **State Management**: React Context API en custom hooks
+- **Routing**: React Router voor navigatie
+- **Formulieren**: React Hook Form + Zod voor validatie
+- **Data Fetching**: Axios voor API-communicatie
+
+### Backend ([aparte repository](https://github.com/DQuinn97/Student-Evaluatie-Tool-Backend))
+
+- **Runtime**: Node.js met Express
+- **Taal**: TypeScript voor type-veiligheid
+- **Database**: MongoDB met Mongoose ODM
+- **Authenticatie**: JWT-tokens voor beveiligde toegang
+- **API Documentatie**: Swagger/OpenAPI
+- **File Uploads**: Cloudinary integratie voor bestandsopslag
+
+## Installatie
+
+1. Clone deze repository:
+
+```bash
+git clone https://github.com/DQuinn97/Student-Evaluatie-Tool.git
+cd Student-Evaluatie-Tool
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Installeer dependencies:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm install
 ```
+
+3. Start de ontwikkelomgeving:
+
+```bash
+npm run dev
+```
+
+4. Open [http://localhost:5173](http://localhost:5173) in je browser
+
+## Vereisten
+
+- Node.js (v18 of hoger)
+- npm (v9 of hoger)
+- Backend API draaiend op [http://localhost:3000](http://localhost:3000)
+
+## Backend Setup
+
+Voor de volledige functionaliteit is de bijbehorende backend vereist:
+
+1. Clone de backend repository:
+
+```bash
+git clone https://github.com/DQuinn97/Student-Evaluatie-Tool-Backend.git
+cd Student-Evaluatie-Tool-Backend
+```
+
+2. Volg de installatie-instructies in de backend README.md
+
+## Bijdragen
+
+Dit project is ontwikkeld als vervangende stageopdracht voor de opleiding Full Stack Developer bij Syntra.
