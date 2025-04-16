@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { FileDown, Edit, Trash2 } from "lucide-react";
-import { Entry, EntryCardProps } from "@/types";
+import { EntryCardProps } from "@/types";
 
 export const EntryCard = ({
   entry,

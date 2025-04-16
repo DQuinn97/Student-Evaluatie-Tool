@@ -65,7 +65,6 @@ export const CreateTaskForm = ({
     updateTaskData,
     submitting,
     availableSubjects,
-    files,
     setFiles,
     handleSubmit,
   } = useTaskForm({ klasId, initialTask, onTaskCreated });
