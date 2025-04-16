@@ -22,7 +22,7 @@ export const TaskSubmissionReview = ({
   className,
   onGradingUpdate,
 }: TaskSubmissionReviewProps) => {
-  const existingGrading = submission.gradering?.[0];
+  const existingGrading = submission.gradering;
   const [score, setScore] = useState<number>(existingGrading?.score || 0);
   const [feedback, setFeedback] = useState<string>(
     existingGrading?.feedback || "",
@@ -37,14 +37,12 @@ export const TaskSubmissionReview = ({
         // Update bestaande gradering
         await api.patch(`/graderingen/${existingGrading._id}`, {
           score,
-          maxscore: maxScore,
           feedback,
         });
       } else {
         // Maak nieuwe gradering aan
         await api.post(`/inzendingen/${submission._id}/gradering`, {
           score,
-          maxscore: maxScore,
           feedback,
         });
       }
@@ -92,9 +90,7 @@ export const TaskSubmissionReview = ({
         <h4 className="mb-2 text-lg font-semibold">Beoordeling</h4>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="mb-2 block text-sm font-medium">
-              Score (max {maxScore} punten)
-            </label>
+            <label className="mb-2 block text-sm font-medium">Score</label>
             <input
               type="number"
               min="0"

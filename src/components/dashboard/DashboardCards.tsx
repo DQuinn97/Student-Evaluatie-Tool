@@ -11,11 +11,10 @@ interface Task {
   type: string;
   deadline: string;
   inzendingen?: Array<{
-    gradering?: Array<{
+    gradering?: {
       score: number;
-      maxscore: number;
       feedback?: string;
-    }>;
+    };
   }>;
   status: string;
   gottenPoints: number;

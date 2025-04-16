@@ -41,12 +41,13 @@ export type Task = {
   type: string;
   deadline: string;
   weging: number;
+  maxScore: number;
   inzendingen: Array<{
     _id: string;
-    gradering: Array<{
+    gradering: {
       score: number;
-      maxscore: number;
-    }>;
+      feedback?: string | undefined;
+    };
   }>;
   klasgroep: {
     _id: string;
@@ -91,12 +92,12 @@ export interface TaskSubmission {
   live: string;
   beschrijving: string;
   bijlagen: string[];
-  gradering?: Array<{
+  gradering?: {
     _id: string;
     feedback: string;
     score: number;
     maxscore: number;
-  }>;
+  };
 }
 
 export interface TaskSubmissionFormProps {

@@ -70,8 +70,13 @@ const StudentDashboard = () => {
             new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
         )
         .map((task) => {
+          const graderingData = task.inzendingen?.[0]?.gradering;
           return {
             ...task, // Spread all original task properties
+            hasGradering: graderingData,
+            gottenPoints: graderingData?.score ?? 0,
+            totalPoints: task.maxScore,
+            feedback: graderingData?.feedback,
             lecture: task.titel, // Additional properties needed for UI
             status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
           };
@@ -100,7 +105,7 @@ const StudentDashboard = () => {
         return true;
       })
       .map((task) => {
-        const graderingData = task.inzendingen?.[0]?.gradering?.[0];
+        const graderingData = task.inzendingen?.[0]?.gradering;
         return {
           _id: task._id,
           taakId: task._id,
@@ -111,7 +116,7 @@ const StudentDashboard = () => {
           inzendingen: task.inzendingen,
           status: task.inzendingen?.length > 0 ? "Ingeleverd" : "Open",
           gottenPoints: graderingData?.score ?? 0,
-          totalPoints: graderingData ? graderingData.maxscore : task.weging,
+          totalPoints: task.maxScore,
           klas: task.klasgroep?.naam || "",
           feedback: graderingData?.feedback || "",
         };
@@ -126,9 +131,9 @@ const StudentDashboard = () => {
             new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
         )
         .map((task) => {
-          const hasGradering = task.inzendingen?.[0]?.gradering?.[0];
+          const hasGradering = task.inzendingen?.[0]?.gradering;
           const score = hasGradering?.score ?? 0;
-          const maxScore = hasGradering ? hasGradering.maxscore : task.weging;
+          const maxScore = task.maxScore;
 
           // Only include tasks that have been graded
           if (!hasGradering) {
@@ -148,6 +153,8 @@ const StudentDashboard = () => {
         .filter(Boolean), // Remove null entries
     [tasks],
   );
+
+  console.log(filteredData);
 
   const table = useTableConfig({
     data: filteredData,
@@ -177,13 +184,10 @@ const StudentDashboard = () => {
         initialFirstName={userData.naam || ""}
         initialLastName={userData.achternaam || ""}
       />
-
       <h1 className="ml-4 text-4xl font-bold">
         {userData.naam ? `${userData.naam}'s Dashboard` : "Dashboard"}
       </h1>
-
       <DashboardCards tasks={tasksForCards} />
-
       <div className="mx-10">
         <h1>Snel overzicht taken</h1>
         <DataTable
@@ -194,7 +198,6 @@ const StudentDashboard = () => {
           emptyMessage="Geen taken gevonden."
         />
       </div>
-
       <FilterSection
         klas={userData.isDocent ? klas : null}
         setKlas={userData.isDocent ? handleKlasChange : () => {}}
@@ -203,7 +206,6 @@ const StudentDashboard = () => {
         tasks={tableData}
         isDocent={userData.isDocent}
       />
-
       <PerformanceChart
         data={chartData}
         klas={userData.isDocent ? klas : "alle"}

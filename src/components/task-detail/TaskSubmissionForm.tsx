@@ -42,8 +42,8 @@ export const TaskSubmissionForm = ({
           });
 
           // Upload files first
-          const { data: uploadedFiles } = await api.post("/upload", formData);
-          submission.bijlagen = uploadedFiles;
+          // const { data: uploadedFiles } = await api.post("/upload", formData);
+          // submission.bijlagen = uploadedFiles;
           setUploading(false);
         }
 
@@ -69,13 +69,13 @@ export const TaskSubmissionForm = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div>
-          <Label htmlFor="url">URL</Label>
+          <Label htmlFor="live">URL</Label>
           <Input
-            id="url"
+            id="live"
             placeholder="Voer een URL in"
-            value={submission.live}
+            defaultValue={submission.live || ""}
             onChange={(e) =>
-              setSubmission((prev) => ({ ...prev, liveUrl: e.target.value }))
+              setSubmission((prev) => ({ ...prev, live: e.target.value }))
             }
             disabled={isSubmitted || isDocent}
             required
@@ -83,13 +83,13 @@ export const TaskSubmissionForm = ({
         </div>
 
         <div>
-          <Label htmlFor="github">GitHub project URL</Label>
+          <Label htmlFor="git">GitHub project URL</Label>
           <Input
-            id="github"
+            id="git"
             placeholder="Voer een GitHub URL in"
-            value={submission.git}
+            defaultValue={submission.git || ""}
             onChange={(e) =>
-              setSubmission((prev) => ({ ...prev, gitUrl: e.target.value }))
+              setSubmission((prev) => ({ ...prev, git: e.target.value }))
             }
             disabled={isSubmitted || isDocent}
             required
@@ -101,7 +101,7 @@ export const TaskSubmissionForm = ({
           <Textarea
             placeholder="Voeg extra context toe aan je inzending"
             className="mt-2"
-            value={submission.beschrijving}
+            defaultValue={submission.beschrijving || ""}
             onChange={(e) =>
               setSubmission((prev) => ({
                 ...prev,

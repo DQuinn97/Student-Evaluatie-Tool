@@ -32,7 +32,7 @@ export const SubmissionsTable = ({
       id: "score",
       header: "Score",
       cell: ({ row }) => {
-        const score = row.original.gradering?.[0]?.score;
+        const score = row.original.gradering?.score;
         if (score === undefined) return "-/-";
         return `${score}/${maxScore}`;
       },
@@ -41,8 +41,7 @@ export const SubmissionsTable = ({
       id: "status",
       header: "Status",
       cell: ({ row }) => {
-        const hasGradering =
-          row.original.gradering && row.original.gradering.length > 0;
+        const hasGradering = row.original.gradering;
         return (
           <Badge variant={hasGradering ? "success" : "default"}>
             {hasGradering ? "Beoordeeld" : "Niet beoordeeld"}
@@ -61,9 +60,7 @@ export const SubmissionsTable = ({
             size="sm"
             onClick={() => onReviewClick?.(rowIndex)}
           >
-            {row.original.gradering && row.original.gradering.length > 0
-              ? "Bekijk"
-              : "Beoordelen"}
+            {row.original.gradering ? "Bekijk" : "Beoordelen"}
           </Button>
         );
       },

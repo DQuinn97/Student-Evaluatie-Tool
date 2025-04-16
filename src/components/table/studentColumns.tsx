@@ -96,10 +96,16 @@ export const studentColumns = (isDocent: boolean): ColumnDef<StudentRow>[] => [
       const percentage = total > 0 ? ((points / total) * 100).toFixed(1) : 0;
       return (
         <div className="flex items-center gap-2">
-          <span>
-            {points}/{total}
-          </span>
-          <span className="text-muted-foreground text-sm">({percentage}%)</span>
+          {hasScore && (
+            <>
+              <span>
+                {points}/{total}
+              </span>
+              <span className="text-muted-foreground text-sm">
+                ({percentage}%)
+              </span>
+            </>
+          )}
         </div>
       );
     },
