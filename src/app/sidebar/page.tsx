@@ -20,10 +20,23 @@ import { Link, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import api from "@/api";
 
+// Storage key for sidebar state
+const SIDEBAR_STORAGE_KEY = "sidebar_state";
+
 export default function Page({ children }: { children: React.ReactNode }) {
   const [userName, setUserName] = useState<string>("");
   const [profileData, setProfileData] = useState<any>(null);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
+    // Initialize from localStorage if available, otherwise default to true (open)
+    const savedState = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+    return savedState !== null ? savedState === "true" : true;
+  });
   const navigate = useNavigate();
+
+  const handleSidebarChange = (open: boolean) => {
+    setSidebarOpen(open);
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(open));
+  };
 
   const fetchUserData = async () => {
     try {
@@ -49,7 +62,11 @@ export default function Page({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      defaultOpen={sidebarOpen}
+      open={sidebarOpen}
+      onOpenChange={handleSidebarChange}
+    >
       <AppSidebar />
       <SidebarInset>
         <header className="bg-background sticky top-0 z-10 mb-2 flex h-16 shrink-0 items-center gap-2 border-b px-4">

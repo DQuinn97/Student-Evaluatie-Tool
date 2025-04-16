@@ -95,6 +95,14 @@ function App() {
                       }
                     />
                     <Route
+                      path="/docent/taken/:id/edit"
+                      element={
+                        <ProtectedRoute allowedRole="docent">
+                          <TaskDetail />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
                       path="/docent/klasbeheer"
                       element={
                         <ProtectedRoute allowedRole="docent">

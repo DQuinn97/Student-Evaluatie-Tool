@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams, useLocation } from "react-router";
 import { toast } from "sonner";
 import { TaskDetail as ITaskDetail } from "../types";
 import api from "../api";
@@ -10,9 +10,11 @@ import { DocentTaskDetail } from "./task-detail/DocentTaskDetail";
 export const TaskDetail = () => {
   const { id, taakId } = useParams<{ id?: string; taakId?: string }>();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const taskId = id || taakId;
   const isDocent = Boolean(id);
   const isNewTask = taskId === "new";
+  const isEditMode = location.pathname.includes("/edit");
   const klasId = searchParams.get("klasId");
   const [task, setTask] = useState<ITaskDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -127,8 +129,9 @@ export const TaskDetail = () => {
     return (
       <DocentTaskDetail
         task={task}
-        klasId={klasId}
+        klasId={klasId || task?.klasgroep?._id}
         isNewTask={isNewTask}
+        isEditMode={isEditMode}
         onTaskCreated={(taskId) => {
           window.location.href = `/docent/taken/${taskId}`;
         }}

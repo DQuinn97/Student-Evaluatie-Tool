@@ -29,15 +29,6 @@ export const SubmissionsTable = ({
       },
     },
     {
-      id: "score",
-      header: "Score",
-      cell: ({ row }) => {
-        const score = row.original.gradering?.score;
-        if (score === undefined) return "-/-";
-        return `${score}/${maxScore}`;
-      },
-    },
-    {
       id: "status",
       header: "Status",
       cell: ({ row }) => {
@@ -47,6 +38,28 @@ export const SubmissionsTable = ({
             {hasGradering ? "Beoordeeld" : "Niet beoordeeld"}
           </Badge>
         );
+      },
+    },
+    {
+      id: "score",
+      header: "Score",
+      cell: ({ row }) => {
+        const score = row.original.gradering?.score;
+        if (score === undefined) return "-/-";
+        return `${score}/${maxScore}`;
+      },
+    },
+    {
+      id: "feedback",
+      header: "Feedback",
+      cell: ({ row }) => {
+        const feedback = row.original.gradering?.feedback;
+        if (feedback) {
+          return feedback.length > 50
+            ? `${feedback.slice(0, 50)}...`
+            : feedback;
+        }
+        return "-";
       },
     },
     {

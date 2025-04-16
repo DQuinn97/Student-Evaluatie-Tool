@@ -8,6 +8,13 @@ import { toast } from "sonner";
 import { ProfileData } from "../types";
 import api from "../api";
 import { useNavigate } from "react-router";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
 
 const Profile = () => {
   const [formData, setFormData] = useState<ProfileData>({
@@ -121,11 +128,28 @@ const Profile = () => {
 
       <div className="flex flex-row gap-10">
         <div className="flex flex-col items-center gap-2">
-          <img
-            src={formData.foto}
-            alt="Profiel foto"
-            className="h-32 w-32 rounded-full object-cover"
-          />
+          <Dialog>
+            <DialogTrigger asChild>
+              <img
+                src={formData.foto}
+                alt="Profiel foto"
+                className="h-32 w-32 cursor-pointer rounded-full object-cover transition-opacity hover:opacity-90"
+                title="Klik om te vergroten"
+              />
+            </DialogTrigger>
+            <DialogContent className="flex items-center justify-center p-1 sm:max-w-md">
+              <DialogTitle className="sr-only">Profiel foto</DialogTitle>
+              <img
+                src={formData.foto}
+                alt="Profiel foto"
+                className="max-h-[70vh] max-w-full rounded-md object-contain"
+                style={{ objectFit: "contain" }}
+              />
+              <DialogDescription className="sr-only">
+                Klik buiten deze afbeelding om te sluiten
+              </DialogDescription>
+            </DialogContent>
+          </Dialog>
           <Button
             onClick={() => document.getElementById("image")?.click()}
             className="mt-2"

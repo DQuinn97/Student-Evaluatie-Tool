@@ -26,7 +26,9 @@ export const TaskMetrics = ({
   const deadlineDate = deadline ? new Date(deadline) : null;
   const isValidDate = deadlineDate && isValid(deadlineDate);
 
-  const isLate = isValidDate && deadlineDate < new Date() && status === "Open";
+  // Check if deadline has passed
+  const isDeadlinePassed = isValidDate && deadlineDate < new Date();
+  const isLate = isDeadlinePassed && status === "Open";
   const displayStatus = isLate ? "Te laat" : status;
   const hasGradering = typeof gottenPoints === "number";
   const scorePercentage =
@@ -50,8 +52,12 @@ export const TaskMetrics = ({
           </p>
           <p className="text-muted-foreground text-sm">
             {isDocent ? (
-              displayStatus === "Te laat" ? (
-                "Te laat ingeleverd"
+              isDeadlinePassed ? (
+                displayStatus === "Te laat" ? (
+                  "Te laat ingeleverd"
+                ) : (
+                  "Deadline verstreken"
+                )
               ) : (
                 "Nog tijd over"
               )

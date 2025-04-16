@@ -153,7 +153,7 @@ export const useTaskForm = ({
 
       if (initialTask?._id) {
         // Update existing task
-        const { data: updatedTask } = await api.put(
+        const { data: updatedTask } = await api.patch(
           `/taken/${initialTask._id}`,
           formData,
           {
