@@ -5,7 +5,6 @@ import { TaskSection } from "./TaskSection";
 import { StudentSection } from "./StudentSection";
 import { useClassManagement } from "@/hooks/useClassManagement";
 import { Accordion } from "@/components/ui/accordion";
-
 export const ClassManagement = () => {
   const {
     classes,
@@ -13,7 +12,6 @@ export const ClassManagement = () => {
     students,
     selectedClass,
     isLoading,
-    error,
     setSelectedClass,
     handleCreateClass,
     handleCreateTask,
@@ -21,16 +19,11 @@ export const ClassManagement = () => {
     handleDeleteTask,
     handleAddStudent,
     handleDeleteStudent,
+    handleUpdateTask,
   } = useClassManagement();
 
   return (
     <div className="p-6">
-      {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-4 text-red-700">
-          {error}
-        </div>
-      )}
-
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Klasbeheer</h2>
         <Button onClick={handleCreateClass} disabled={isLoading}>
@@ -55,6 +48,7 @@ export const ClassManagement = () => {
               onCreateTask={handleCreateTask}
               onDuplicateTask={handleDuplicateTask}
               onDeleteTask={handleDeleteTask}
+              onUpdateTask={handleUpdateTask}
               selectedClass={selectedClass}
             />
             <StudentSection

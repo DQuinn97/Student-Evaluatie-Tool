@@ -3,6 +3,7 @@ import api from "@/api";
 import { Class, Task, Student } from "@/types";
 import { useDialog } from "@/contexts/DialogContext";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export const useClassManagement = () => {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -10,7 +11,6 @@ export const useClassManagement = () => {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { openDialog } = useDialog();
   const navigate = useNavigate();
 
@@ -31,8 +31,7 @@ export const useClassManagement = () => {
       const { data } = await api.get("/klassen");
       setClasses(data);
     } catch (error) {
-      console.error("Error fetching classes:", error);
-      setError("Er is een fout opgetreden bij het ophalen van de klassen");
+      toast.error("Er is een fout opgetreden bij het ophalen van de klassen");
     } finally {
       setIsLoading(false);
     }
@@ -43,8 +42,7 @@ export const useClassManagement = () => {
       const { data } = await api.get(`/klassen/${selectedClass}/taken`);
       setTasks(data);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
-      setError("Er is een fout opgetreden bij het ophalen van de taken");
+      toast.error("Er is een fout opgetreden bij het ophalen van de taken");
     }
   };
 
@@ -57,8 +55,7 @@ export const useClassManagement = () => {
       );
       setStudents(filteredStudents);
     } catch (error) {
-      console.error("Error fetching students:", error);
-      setError("Er is een fout opgetreden bij het ophalen van de studenten");
+      toast.error("Er is een fout opgetreden bij het ophalen van de studenten");
     }
   };
 
@@ -75,8 +72,7 @@ export const useClassManagement = () => {
           const { data } = await api.post("/klassen", { naam: className });
           setClasses([...classes, data]);
         } catch (error) {
-          console.error("Error creating class:", error);
-          setError("Er is een fout opgetreden bij het aanmaken van de klas");
+          toast.error("Er is een fout opgetreden bij het aanmaken van de klas");
         } finally {
           setIsLoading(false);
         }
@@ -94,11 +90,17 @@ export const useClassManagement = () => {
   const handleDuplicateTask = async (taskId: string) => {
     try {
       setIsLoading(true);
-      const { data } = await api.post(`/taken/${taskId}/dupliceer`);
+      // Ensure we're sending data with the correct content type
+      const { data } = await api.post(
+        `/taken/${taskId}/dupliceer`,
+        { klasgroepId: selectedClass },
+        { headers: { "Content-Type": "application/json" } },
+      );
       setTasks([...tasks, data]);
+      toast.success("Taak succesvol gedupliceerd");
     } catch (error) {
       console.error("Error duplicating task:", error);
-      setError("Er is een fout opgetreden bij het dupliceren van de taak");
+      toast.error("Er is een fout opgetreden bij het dupliceren van de taak");
     } finally {
       setIsLoading(false);
     }
@@ -110,8 +112,7 @@ export const useClassManagement = () => {
       await api.delete(`/taken/${taskId}`);
       setTasks(tasks.filter((task) => task._id !== taskId));
     } catch (error) {
-      console.error("Error deleting task:", error);
-      setError("Er is een fout opgetreden bij het verwijderen van de taak");
+      toast.error("Er is een fout opgetreden bij het verwijderen van de taak");
     } finally {
       setIsLoading(false);
     }
@@ -138,8 +139,7 @@ export const useClassManagement = () => {
           );
           setStudents(filteredStudents);
         } catch (error) {
-          console.error("Error adding student:", error);
-          setError(
+          toast.error(
             "Er is een fout opgetreden bij het toevoegen van de student",
           );
         } finally {
@@ -158,11 +158,20 @@ export const useClassManagement = () => {
       });
       setStudents(students.filter((student) => student._id !== studentId));
     } catch (error) {
-      console.error("Error deleting student:", error);
-      setError("Er is een fout opgetreden bij het verwijderen van de student");
+      toast.error(
+        "Er is een fout opgetreden bij het verwijderen van de student",
+      );
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleUpdateTask = (taskId: string, updatedFields: Partial<Task>) => {
+    setTasks(
+      tasks.map((task) =>
+        task._id === taskId ? { ...task, ...updatedFields } : task,
+      ),
+    );
   };
 
   return {
@@ -171,7 +180,6 @@ export const useClassManagement = () => {
     students,
     selectedClass,
     isLoading,
-    error,
     setSelectedClass,
     handleCreateClass,
     handleCreateTask,
@@ -179,5 +187,6 @@ export const useClassManagement = () => {
     handleDeleteTask,
     handleAddStudent,
     handleDeleteStudent,
+    handleUpdateTask,
   };
 };

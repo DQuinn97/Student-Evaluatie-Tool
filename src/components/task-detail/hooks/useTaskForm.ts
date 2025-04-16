@@ -128,6 +128,16 @@ export const useTaskForm = ({
         1,
       );
       formData.append("weging", wegingValue.toString());
+
+      // Ensure maxScore is always a valid number (minimum 1)
+      const maxScoreValue = Math.max(
+        1,
+        typeof taskData.maxScore === "string"
+          ? parseInt(taskData.maxScore as unknown as string)
+          : taskData.maxScore || 100,
+      );
+      formData.append("maxScore", maxScoreValue.toString());
+
       formData.append(
         "isGepubliceerd",
         taskData.isGepubliceerd ? "true" : "false",

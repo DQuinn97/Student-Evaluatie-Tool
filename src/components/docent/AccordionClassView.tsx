@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
 import { DashboardCards } from "../dashboard/DashboardCards";
@@ -7,9 +7,9 @@ import { FilterSection } from "../dashboard/FilterSection";
 import { PerformanceChart } from "../dashboard/PerformanceChart";
 import { useTableConfig } from "@/hooks/useTableConfig";
 import { ChartConfig } from "@/components/ui/chart";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
-import { ColumnDef, Row } from "@tanstack/react-table";
+import { useNavigate } from "react-router";
+import api from "@/api";
+import { getTaskColumns } from "../table/taskColumns";
 
 const chartConfig = {
   points: { label: "Score" },
@@ -38,33 +38,41 @@ type ClassViewProps = {
   };
 };
 
-const taskColumns: ColumnDef<Task>[] = [
-  {
-    accessorKey: "titel",
-    header: "Titel",
-  },
-  {
-    accessorKey: "type",
-    header: "Type",
-  },
-  {
-    accessorKey: "deadline",
-    header: "Deadline",
-    cell: ({ row }: { row: Row<Task> }) => {
-      const deadline = row.getValue("deadline");
-      return (
-        <div>
-          {format(new Date(deadline as string), "d MMMM yyyy HH:mm", {
-            locale: nl,
-          })}
-        </div>
-      );
-    },
-  },
-];
-
 export const AccordionClassView = ({ classData }: ClassViewProps) => {
+  const navigate = useNavigate();
   const [type, setType] = useState<string | null>("alle");
+  const [totalStudents, setTotalStudents] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchTotalStudents = async () => {
+      try {
+        const { data } = await api.get(`/klassen/${classData._id}`);
+        if (data && data.studenten) {
+          setTotalStudents(data.studenten.length || 0);
+        }
+      } catch (error) {
+        console.error("Error fetching total students:", error);
+      }
+    };
+
+    fetchTotalStudents();
+  }, [classData._id]);
+
+  const calculateAverageScore = (task: Task) => {
+    const gradedSubmissions = task.inzendingen.filter(
+      (inzending) => inzending.gradering,
+    );
+
+    if (gradedSubmissions.length === 0) return null;
+
+    const totalScore = gradedSubmissions.reduce((acc, inzending) => {
+      const graderingScore = inzending.gradering?.score || 0;
+      const graderingMaxScore = task.maxScore || 100;
+      return acc + (graderingScore / graderingMaxScore) * 100;
+    }, 0);
+
+    return totalScore / gradedSubmissions.length;
+  };
 
   const tableData = classData.taken
     .sort(
@@ -85,8 +93,23 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
         totalPoints: task.maxScore ?? 0,
         klas: classData.naam,
         feedback: graderingData?.feedback || "",
+        klasgroep: {
+          _id: classData._id,
+          naam: classData.naam,
+        },
       };
     });
+
+  // Use the reusable taskColumns component
+  const taskColumns = getTaskColumns({
+    navigate,
+    calculateAverageScore: (task) => {
+      const originalTask = classData.taken.find((t) => t._id === task._id);
+      return originalTask ? calculateAverageScore(originalTask) : null;
+    },
+    totalStudentsByClass: totalStudents,
+    isSimpleView: true, // Simplified view with just the view button
+  });
 
   // Zorg ervoor dat filterSectionTasks voldoet aan het Task type
   const filterSectionTasks = tableData.map((task) => ({

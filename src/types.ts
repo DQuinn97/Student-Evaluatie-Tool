@@ -42,6 +42,7 @@ export type Task = {
   deadline: string;
   weging: number;
   maxScore: number;
+  isGepubliceerd?: boolean;
   inzendingen: Array<{
     _id: string;
     gradering: {

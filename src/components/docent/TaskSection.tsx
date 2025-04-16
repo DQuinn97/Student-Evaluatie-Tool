@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus, Copy, Trash, Eye } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   AccordionItem,
   AccordionTrigger,
@@ -7,22 +7,12 @@ import {
 } from "@/components/ui/accordion";
 import { DataTable } from "../shared/DataTable";
 import { useTableConfig } from "@/hooks/useTableConfig";
-import { format } from "date-fns";
-import { nl } from "date-fns/locale";
 import { useNavigate } from "react-router";
 import { Task } from "@/types";
-import { Row } from "@tanstack/react-table";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+import { useState, useEffect } from "react";
+import api from "@/api";
+import { toast } from "sonner";
+import { getTaskColumns } from "../table/taskColumns";
 
 type TaskSectionProps = {
   tasks: Task[];
@@ -30,6 +20,7 @@ type TaskSectionProps = {
   onCreateTask: () => void;
   onDuplicateTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
+  onUpdateTask?: (id: string, updatedFields: Partial<Task>) => void;
   selectedClass: string | null;
 };
 
@@ -39,9 +30,62 @@ export const TaskSection = ({
   onCreateTask,
   onDuplicateTask,
   onDeleteTask,
+  onUpdateTask,
   selectedClass,
 }: TaskSectionProps) => {
   const navigate = useNavigate();
+  const [publishingTask, setPublishingTask] = useState<string | null>(null);
+  const [totalStudentsByClass, setTotalStudentsByClass] = useState<
+    Record<string, number>
+  >({});
+
+  // Fetch total students for the selected class
+  useEffect(() => {
+    const fetchTotalStudents = async () => {
+      if (!selectedClass) return;
+
+      try {
+        const { data } = await api.get(`/klassen/${selectedClass}`);
+        if (data && data.studenten) {
+          setTotalStudentsByClass((prev) => ({
+            ...prev,
+            [selectedClass]: data.studenten.length || 0,
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching total students:", error);
+      }
+    };
+
+    fetchTotalStudents();
+  }, [selectedClass]);
+
+  const handlePublishToggle = async (taskId: string, isPublished: boolean) => {
+    setPublishingTask(taskId);
+    try {
+      await api.patch(`/taken/${taskId}`, {
+        isGepubliceerd: isPublished,
+      });
+
+      // Update state in the parent component
+      if (onUpdateTask) {
+        onUpdateTask(taskId, { isGepubliceerd: isPublished });
+      }
+
+      toast.success(
+        isPublished
+          ? "Taak gepubliceerd"
+          : "Taak niet meer zichtbaar voor studenten",
+      );
+    } catch (error) {
+      toast.error(
+        "Er is een fout opgetreden bij het wijzigen van de publicatiestatus",
+      );
+      console.error(error);
+    } finally {
+      setPublishingTask(null);
+    }
+  };
 
   const calculateAverageScore = (task: Task) => {
     const gradedSubmissions = task.inzendingen.filter(
@@ -59,88 +103,16 @@ export const TaskSection = ({
     return totalScore / gradedSubmissions.length;
   };
 
-  const taskColumns = [
-    {
-      accessorKey: "titel",
-      header: "Titel",
-      cell: ({ row }: { row: Row<Task> }) => row.original.titel,
-    },
-    {
-      accessorKey: "type",
-      header: "Type",
-    },
-    {
-      accessorKey: "deadline",
-      header: "Deadline",
-      cell: ({ row }: { row: Row<Task> }) => {
-        const deadline = row.getValue("deadline");
-        return (
-          <div>
-            {format(new Date(deadline as string), "d MMMM yyyy HH:mm", {
-              locale: nl,
-            })}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "averageScore",
-      header: "Gemiddelde Score",
-      cell: ({ row }: { row: Row<Task> }) => {
-        const average = calculateAverageScore(row.original);
-        return (
-          <div>
-            {average !== null ? `${average.toFixed(1)}%` : "Geen scores"}
-          </div>
-        );
-      },
-    },
-    {
-      id: "actions",
-      cell: ({ row }: { row: Row<Task> }) => {
-        const task = row.original;
-        return (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/docent/taken/${task._id}`)}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onDuplicateTask(task._id)}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Trash className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Bevestig Verwijderen</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Weet je zeker dat je deze taak wilt verwijderen?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Annuleren</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDeleteTask(task._id)}>
-                    Verwijderen
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        );
-      },
-    },
-  ];
+  // Use the reusable task columns component
+  const taskColumns = getTaskColumns({
+    navigate,
+    onDuplicateTask,
+    onDeleteTask,
+    publishingTask,
+    handlePublishToggle,
+    calculateAverageScore,
+    totalStudentsByClass,
+  });
 
   const table = useTableConfig({
     data: tasks,

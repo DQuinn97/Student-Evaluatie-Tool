@@ -172,15 +172,21 @@ export const ScoreField = ({
   onChange: (value: number) => void;
 }) => (
   <div>
-    <Label htmlFor="weging">Maximale score</Label>
+    <Label htmlFor="maxScore">Maximale score *</Label>
     <Input
-      id="weging"
+      id="maxScore"
       type="number"
-      min="0"
-      value={value}
-      onChange={(e) => onChange(parseFloat(e.target.value))}
+      min="1"
+      step="1"
+      value={value || 100} // Ensure we always have a default value
+      onChange={(e) => {
+        // Ensure we always have a valid number, default to 100 if invalid
+        const numberValue = parseInt(e.target.value);
+        onChange(isNaN(numberValue) || numberValue <= 0 ? 100 : numberValue);
+      }}
       required
     />
+    <span className="text-muted-foreground text-xs">Verplicht veld</span>
   </div>
 );
 
