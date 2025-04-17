@@ -94,7 +94,7 @@ export const getTaskColumns = ({
           <div className="flex flex-col">
             <span>
               {average !== null
-                ? `${average.toFixed(1)}/${task.maxScore}`
+                ? `${average.toFixed(1)}/${task.totalPoints}`
                 : "Geen scores"}
             </span>
             {average !== null && (
