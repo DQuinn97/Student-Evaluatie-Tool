@@ -35,13 +35,16 @@ const Login = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(true);
+  const [canLogIn, setCanLogIn] = useState(true);
 
   const onSubmit = async function () {
     setIsLoading(true);
     try {
       let hasStorageAccess = await document.hasStorageAccess();
+
       if (!hasStorageAccess) {
         setHasAccess(false);
+        setCanLogIn(false);
         await document.requestStorageAccess().then(
           () => {
             setHasAccess(true);
@@ -51,15 +54,20 @@ const Login = () => {
           },
         );
       }
+
       if (hasAccess) {
         const response = await api.post("/auth/login", {
           email: form.getValues("email"),
           wachtwoord: form.getValues("wachtwoord"),
         });
 
+        if (!document.cookie) {
+          setCanLogIn(false);
+        }
+
         const data = response.data;
 
-        if (response.status === 200) {
+        if (canLogIn && response.status === 200) {
           toast.success(data.message);
           setTimeout(() => {
             navigate("/student/dashboard");
