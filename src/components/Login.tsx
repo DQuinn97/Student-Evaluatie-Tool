@@ -34,24 +34,37 @@ const Login = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [hasAccess, setHasAccess] = useState(true);
 
   const onSubmit = async function () {
     setIsLoading(true);
     try {
-      const response = await api.post("/auth/login", {
-        email: form.getValues("email"),
-        wachtwoord: form.getValues("wachtwoord"),
-      });
+      let hasStorageAccess = await document.hasStorageAccess();
+      if (!hasStorageAccess) {
+        setHasAccess(false);
+        await document.requestStorageAccess().then(
+          async () => {
+            setHasAccess(true);
+            const response = await api.post("/auth/login", {
+              email: form.getValues("email"),
+              wachtwoord: form.getValues("wachtwoord"),
+            });
 
-      const data = response.data;
+            const data = response.data;
 
-      if (response.status === 200) {
-        toast.success(data.message);
-        setTimeout(() => {
-          navigate("/student/dashboard");
-        }, 1500);
-      } else {
-        toast.error(data.message);
+            if (response.status === 200) {
+              toast.success(data.message);
+              setTimeout(() => {
+                navigate("/student/dashboard");
+              }, 1500);
+            } else {
+              toast.error(data.message);
+            }
+          },
+          () => {
+            setHasAccess(false);
+          },
+        );
       }
     } catch (error) {
       toast.error((error as { message: string }).message ?? "Onbekende fout");
@@ -59,7 +72,6 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="flex h-screen flex-col items-center justify-center">
       <div className="text-2xl font-bold">Login</div>
