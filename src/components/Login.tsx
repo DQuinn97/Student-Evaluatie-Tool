@@ -34,22 +34,23 @@ const Login = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [hasAccess, setHasAccess] = useState(true);
-
+  let hasAccess = true;
+  let canLogIn = true;
   const onSubmit = async function () {
     setIsLoading(true);
     try {
       let hasStorageAccess = await document.hasStorageAccess();
-      let canLogIn = true;
+      hasAccess = true;
+      canLogIn = true;
       if (!hasStorageAccess) {
-        setHasAccess(false);
+        hasAccess = false;
         canLogIn = false;
         await document.requestStorageAccess().then(
           () => {
-            setHasAccess(true);
+            hasAccess = true;
           },
           () => {
-            setHasAccess(false);
+            hasAccess = false;
           },
         );
       }
@@ -62,6 +63,19 @@ const Login = () => {
 
         if (!document.cookie.includes("tokenExists")) {
           canLogIn = false;
+          await document.requestStorageAccess().then(
+            async () => {
+              await api.post("/auth/login", {
+                email: form.getValues("email"),
+                wachtwoord: form.getValues("wachtwoord"),
+              });
+              if (!document.cookie.includes("tokenExists")) canLogIn = false;
+              else canLogIn = true;
+            },
+            () => {
+              canLogIn = false;
+            },
+          );
         }
 
         const data = response.data;
@@ -72,7 +86,7 @@ const Login = () => {
             navigate("/student/dashboard");
           }, 1500);
         } else {
-          if (response.status === 200) toast.error(data.message);
+          if (data.message) toast.error(data.message);
           else
             toast.error(
               "Deze app heeft cookies nodig om te werken. Geef deze toegang om verder te gaan.",
