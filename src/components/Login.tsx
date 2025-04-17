@@ -35,16 +35,15 @@ const Login = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(true);
-  const [canLogIn, setCanLogIn] = useState(true);
 
   const onSubmit = async function () {
     setIsLoading(true);
     try {
       let hasStorageAccess = await document.hasStorageAccess();
-
+      let canLogIn = true;
       if (!hasStorageAccess) {
         setHasAccess(false);
-        setCanLogIn(false);
+        canLogIn = false;
         await document.requestStorageAccess().then(
           () => {
             setHasAccess(true);
@@ -61,8 +60,8 @@ const Login = () => {
           wachtwoord: form.getValues("wachtwoord"),
         });
 
-        if (!document.cookie) {
-          setCanLogIn(false);
+        if (!document.cookie.includes("tokenExists")) {
+          canLogIn = false;
         }
 
         const data = response.data;
@@ -73,7 +72,11 @@ const Login = () => {
             navigate("/student/dashboard");
           }, 1500);
         } else {
-          toast.error(data.message);
+          if (response.status === 200) toast.error(data.message);
+          else
+            toast.error(
+              "Deze app heeft cookies nodig om te werken. Geef deze toegang om verder te gaan.",
+            );
         }
       }
     } catch (error) {
