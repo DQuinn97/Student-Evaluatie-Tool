@@ -34,24 +34,40 @@ const Login = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [hasAccess, setHasAccess] = useState(true);
 
   const onSubmit = async function () {
     setIsLoading(true);
     try {
-      const response = await api.post("/auth/login", {
-        email: form.getValues("email"),
-        wachtwoord: form.getValues("wachtwoord"),
-      });
+      let hasStorageAccess = await document.hasStorageAccess();
+      console.log(hasStorageAccess);
+      if (!hasStorageAccess) {
+        setHasAccess(false);
+        await document.requestStorageAccess().then(
+          () => {
+            setHasAccess(true);
+          },
+          () => {
+            setHasAccess(false);
+          },
+        );
+      }
+      if (hasAccess) {
+        const response = await api.post("/auth/login", {
+          email: form.getValues("email"),
+          wachtwoord: form.getValues("wachtwoord"),
+        });
 
-      const data = response.data;
+        const data = response.data;
 
-      if (response.status === 200) {
-        toast.success(data.message);
-        setTimeout(() => {
-          navigate("/student/dashboard");
-        }, 1500);
-      } else {
-        toast.error(data.message);
+        if (response.status === 200) {
+          toast.success(data.message);
+          setTimeout(() => {
+            navigate("/student/dashboard");
+          }, 1500);
+        } else {
+          toast.error(data.message);
+        }
       }
     } catch (error) {
       toast.error((error as { message: string }).message ?? "Onbekende fout");
@@ -59,10 +75,15 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="flex h-screen flex-col items-center justify-center">
       <div className="text-2xl font-bold">Login</div>
+      {!hasAccess && (
+        <div>
+          Deze app heeft toegang nodig tot cookies om te kunnen werken, geef
+          deze toegang om verder te gaan.
+        </div>
+      )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="m-4 space-y-8">
           <FormField
