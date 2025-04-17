@@ -40,7 +40,6 @@ const Login = () => {
     setIsLoading(true);
     try {
       let hasStorageAccess = await document.hasStorageAccess();
-      console.log(hasStorageAccess);
       if (!hasStorageAccess) {
         setHasAccess(false);
         await document.requestStorageAccess().then(
