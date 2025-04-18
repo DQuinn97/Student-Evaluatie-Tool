@@ -50,6 +50,18 @@ export default function Page({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     fetchUserData();
+
+    // Add event listener for profile updates
+    const handleProfileUpdate = () => {
+      fetchUserData();
+    };
+
+    window.addEventListener("user-profile-updated", handleProfileUpdate);
+
+    // Clean up
+    return () => {
+      window.removeEventListener("user-profile-updated", handleProfileUpdate);
+    };
   }, []);
 
   const logout = () => {
@@ -93,9 +105,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
                 <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Link to="/profile" onClick={fetchUserData}>
-                    Profiel
-                  </Link>
+                  <Link to="/profile">Profiel</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
               </DropdownMenuContent>

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ProfileData } from "../types";
 import api from "../api";
-import { useNavigate } from "react-router";
+import { useUser } from "@/contexts/UserContext";
 
 export const useProfile = () => {
   const [formData, setFormData] = useState<ProfileData>({
@@ -14,8 +14,8 @@ export const useProfile = () => {
     email: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { refreshUserData } = useUser();
 
   const fetchProfile = async () => {
     try {
@@ -74,23 +74,20 @@ export const useProfile = () => {
           "Profiel succesvol geüpdated! Je foto wordt zo bijgewerkt...",
         );
 
-        // Longer delay when an image was uploaded to ensure it's processed
-        setTimeout(async () => {
-          await fetchProfile();
-          // Force reload the parent component to update the header
-          setTimeout(() => {
-            navigate(0);
-          }, 500);
-        }, 2000);
+        // Refresh the profile data
+        await fetchProfile();
+
+        // Notify the app that the profile has been updated
+        await refreshUserData();
       } else {
         // No image uploaded, proceed normally
         toast.success("Profiel succesvol geüpdated!");
+
+        // Refresh the profile data
         await fetchProfile();
 
-        // Force reload the parent component to update the header
-        setTimeout(() => {
-          navigate(0);
-        }, 1000);
+        // Notify the app that the profile has been updated
+        await refreshUserData();
       }
 
       return true;
