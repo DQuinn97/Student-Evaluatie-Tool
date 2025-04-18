@@ -17,7 +17,6 @@ import { Input } from "../components/ui/input";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import Cookies from "js-cookie";
 
 const formSchema = z.object({
   email: z.string().email().min(1, "Please enter a valid email address"),
@@ -36,7 +35,6 @@ const Login = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(true);
-  let responseMessage = "";
 
   const onSubmit = async function () {
     setHasAccess(true);
