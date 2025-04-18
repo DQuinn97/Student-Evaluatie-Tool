@@ -36,7 +36,7 @@ const Login = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [hasAccess, setHasAccess] = useState(true);
-  // useEffect(() => {}, [hasAccess]);
+  let responseMessage = "";
 
   const onSubmit = async function () {
     setHasAccess(true);
@@ -53,16 +53,15 @@ const Login = () => {
                 wachtwoord: form.getValues("wachtwoord"),
               })
               .then(async (response) => {
-                console.log("response: ", response);
-                console.log(Cookies.get());
-                console.log(response.headers);
                 if (!document.cookie.includes("tokenExists")) {
                   await api
                     .get("/auth/test")
-                    .then((response) => {
-                      console.log(true, response);
+                    .then(() => {
                       toast.success(response.data.message);
                       setHasAccess(true);
+                      setTimeout(() => {
+                        navigate("/student/dashboard");
+                      }, 1500);
                     })
                     .catch(() => {
                       setHasAccess(false);
@@ -72,9 +71,11 @@ const Login = () => {
                       );
                     });
                 } else {
-                  console.log(true, document.cookie);
                   toast.success(response.data.message);
                   setHasAccess(true);
+                  setTimeout(() => {
+                    navigate("/student/dashboard");
+                  }, 1500);
                 }
               })
               .catch((error) => {
@@ -83,7 +84,6 @@ const Login = () => {
               });
           },
           () => {
-            console.log("storage access not granted", document.cookie);
             setHasAccess(false);
             toast.error(
               "Deze app heeft cookies nodig om te kunnen werken. Geef toestemming om cookies te gebruiken in je browsersettings.",
@@ -97,12 +97,6 @@ const Login = () => {
             "Deze app heeft cookies nodig om te kunnen werken. Geef toestemming om cookies te gebruiken in je browsersettings.",
           );
         });
-
-      if (hasAccess) {
-        setTimeout(() => {
-          navigate("/student/dashboard");
-        }, 1500);
-      }
     } catch (error) {
       setHasAccess(false);
       toast.error((error as { message: string }).message ?? "Onbekende fout");
