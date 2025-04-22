@@ -8,6 +8,7 @@ import { useProfile } from "../hooks/useProfile";
 import { ProfileImage } from "./profile/ProfileImage";
 import { ProfileForm } from "./profile/ProfileForm";
 import { ImageCropper } from "./profile/ImageCropper";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Profile = () => {
   const { formData, setFormData, setSelectedFile, saveProfile, loading } =
@@ -16,6 +17,7 @@ const Profile = () => {
   const [showCropper, setShowCropper] = useState(false);
   const [cropperImage, setCropperImage] = useState("");
   const cropperRef = useRef<CropperRef>(null);
+  const isMobile = useIsMobile();
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -75,10 +77,12 @@ const Profile = () => {
   }, [formData.foto, cropperImage]);
 
   return (
-    <div className="grid place-items-center">
+    <div className="grid place-items-center px-4">
       <h1 className="mb-4 text-2xl font-bold">Profiel</h1>
 
-      <div className="flex flex-row gap-10">
+      <div
+        className={`flex ${isMobile ? "flex-col" : "flex-row"} w-full max-w-3xl gap-10`}
+      >
         <ProfileImage
           formData={formData}
           showId={showId}
@@ -102,7 +106,7 @@ const Profile = () => {
         cropperRef={cropperRef}
       />
 
-      <Separator className="bg-accent m-10" />
+      <Separator className="bg-accent m-10 w-full max-w-3xl" />
       <Button>
         <Link to="/reset-password">Verander Wachtwoord</Link>
       </Button>

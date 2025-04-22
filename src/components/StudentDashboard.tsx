@@ -154,8 +154,6 @@ const StudentDashboard = () => {
     [tasks],
   );
 
-  console.log(filteredData);
-
   const table = useTableConfig({
     data: filteredData,
     columns: studentColumns(false),

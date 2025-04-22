@@ -2,6 +2,7 @@ import { ClipboardCheck, TrendingUp, UsersRound } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import api from "@/api";
 import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Task {
   _id: string;
@@ -30,6 +31,7 @@ interface DashboardCardsProps {
 export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
   const [classAverage, setClassAverage] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchClassAverage = async () => {
@@ -132,23 +134,43 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
   const totalTasks = tasks.length;
 
   return (
-    <div className="my-10 flex gap-4 px-6">
+    <div className="my-4 grid grid-cols-3 gap-2 px-2 md:my-6 md:gap-4 md:px-6">
       <Card className="w-full">
-        <CardHeader className="flex flex-col gap-4">
-          <TrendingUp />
-          <CardTitle>Jouw gemiddelde</CardTitle>
-          <CardDescription className="text-center">
+        <CardHeader
+          className={`flex flex-col items-center gap-1 ${isMobile ? "px-2" : "gap-3"}`}
+        >
+          <TrendingUp className={isMobile ? "h-4 w-4" : "h-6 w-6"} />
+          <CardTitle
+            className={isMobile ? "text-center text-xs" : "text-center"}
+          >
+            Jouw gemiddelde
+          </CardTitle>
+          <CardDescription
+            className={`text-center font-semibold ${isMobile ? "text-sm" : "text-xl"}`}
+          >
             {personalAverage > 0 ? `${personalAverage.toFixed(1)}%` : "-/-"}
           </CardDescription>
         </CardHeader>
       </Card>
       <Card className="w-full">
-        <CardHeader className="flex flex-col gap-4">
-          <UsersRound />
-          <CardTitle>Klas gemiddelde</CardTitle>
-          <CardDescription className="text-center">
+        <CardHeader
+          className={`flex flex-col items-center gap-1 ${isMobile ? "px-2" : "gap-3"}`}
+        >
+          <UsersRound className={isMobile ? "h-4 w-4" : "h-6 w-6"} />
+          <CardTitle
+            className={isMobile ? "text-center text-xs" : "text-center"}
+          >
+            Klas gemiddelde
+          </CardTitle>
+          <CardDescription
+            className={`text-center font-semibold ${isMobile ? "text-sm" : "text-xl"}`}
+          >
             {error ? (
-              <span className="text-sm text-red-500">{error}</span>
+              <span
+                className={`text-red-500 ${isMobile ? "text-xs" : "text-sm"}`}
+              >
+                {error}
+              </span>
             ) : classAverage && classAverage > 0 ? (
               `${classAverage.toFixed(1)}%`
             ) : (
@@ -158,10 +180,18 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
         </CardHeader>
       </Card>
       <Card className="w-full">
-        <CardHeader className="flex flex-col gap-4">
-          <ClipboardCheck />
-          <CardTitle>Ingeleverde taken</CardTitle>
-          <CardDescription className="text-center">
+        <CardHeader
+          className={`flex flex-col items-center gap-1 ${isMobile ? "px-2" : "gap-3"}`}
+        >
+          <ClipboardCheck className={isMobile ? "h-4 w-4" : "h-6 w-6"} />
+          <CardTitle
+            className={isMobile ? "text-center text-xs" : "text-center"}
+          >
+            Ingeleverde taken
+          </CardTitle>
+          <CardDescription
+            className={`text-center font-semibold ${isMobile ? "text-sm" : "text-xl"}`}
+          >
             {completedTasks} / {totalTasks}
           </CardDescription>
         </CardHeader>
