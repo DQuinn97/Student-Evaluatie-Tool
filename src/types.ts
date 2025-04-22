@@ -82,6 +82,7 @@ export interface TaskDetail {
       student?: {
         naam: string;
         achternaam: string;
+        email: string;
       };
     }
   >;
