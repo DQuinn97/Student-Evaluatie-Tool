@@ -44,7 +44,6 @@ const Login = () => {
         .requestStorageAccess()
         .then(
           async () => {
-            console.log("storage access granted");
             await api
               .post("/auth/login", {
                 email: form.getValues("email"),
