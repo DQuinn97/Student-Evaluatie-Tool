@@ -50,30 +50,22 @@ const Login = () => {
                 wachtwoord: form.getValues("wachtwoord"),
               })
               .then(async (response) => {
-                if (!document.cookie.includes("tokenExists")) {
-                  await api
-                    .get("/auth/test")
-                    .then(() => {
-                      toast.success(response.data.message);
-                      setHasAccess(true);
-                      setTimeout(() => {
-                        navigate("/student/dashboard");
-                      }, 1500);
-                    })
-                    .catch(() => {
-                      setHasAccess(false);
+                await api
+                  .get("/auth/test")
+                  .then(() => {
+                    toast.success(response.data.message);
+                    setHasAccess(true);
+                    setTimeout(() => {
+                      navigate("/student/dashboard");
+                    }, 1500);
+                  })
+                  .catch(() => {
+                    setHasAccess(false);
 
-                      toast.error(
-                        "Deze app heeft cookies nodig om te kunnen werken. Geef toestemming om cookies te gebruiken in je browsersettings.",
-                      );
-                    });
-                } else {
-                  toast.success(response.data.message);
-                  setHasAccess(true);
-                  setTimeout(() => {
-                    navigate("/student/dashboard");
-                  }, 1500);
-                }
+                    toast.error(
+                      "Deze app heeft cookies nodig om te kunnen werken. Geef toestemming om cookies te gebruiken in je browsersettings.",
+                    );
+                  });
               })
               .catch((error) => {
                 setHasAccess(false);
