@@ -9,23 +9,21 @@ import { z } from "zod";
 import { UseFormReturn } from "react-hook-form";
 
 // ===== User Types =====
-export type Student = {
+export interface User {
   _id: string;
   naam: string;
   achternaam: string;
   email: string;
   foto?: string;
+  gsm?: string;
   isDocent?: boolean;
-};
-
-export interface ProfileData {
-  id: string;
-  naam: string;
-  achternaam: string;
-  gsm: string;
-  foto: string;
-  email: string;
 }
+
+// Type for profile form/display where ID is represented differently
+export type ProfileData = Omit<User, "_id"> & { id: string };
+
+// Student is now just an alias for User for better semantics
+export type Student = User;
 
 // ===== Class/Group Types =====
 export type Class = {
@@ -56,17 +54,10 @@ export type Task = {
   };
 };
 
-export interface TaskDetail {
-  _id: string;
-  type: string;
-  titel: string;
+export interface TaskDetail extends Omit<Task, "klasgroep" | "inzendingen"> {
   git: string;
   url: string;
   beschrijving: string;
-  deadline: string;
-  weging: number;
-  maxScore: number;
-  isGepubliceerd: boolean;
   bijlagen: string[];
   klasgroep: {
     _id: string;
@@ -88,20 +79,26 @@ export interface TaskDetail {
   >;
 }
 
-export interface TaskSubmission {
-  _id: string;
-  git: string;
-  live: string;
-  beschrijving: string;
-  bijlagen: string[];
-  gradering?: {
-    _id: string;
-    feedback: string;
-    score: number;
-    maxscore: number;
-  };
-}
+export const TaskSubmissionSchema = z.object({
+  _id: z.string(),
+  git: z.string(),
+  live: z.string(),
+  beschrijving: z.string(),
+  bijlagen: z.array(z.string()),
+  gradering: z
+    .object({
+      _id: z.string(),
+      feedback: z.string(),
+      score: z.number(),
+      maxscore: z.number(),
+    })
+    .optional(),
+});
 
+export type TaskSubmission = z.infer<typeof TaskSubmissionSchema>;
+
+// We'll keep these interfaces for now as they're used across components,
+// but they could be moved to their respective component files
 export interface TaskSubmissionFormProps {
   isSubmitted: boolean;
   initialSubmission?: TaskSubmission;
@@ -143,15 +140,37 @@ export type DeleteItem = {
 } | null;
 
 // ===== Stagedagboek Types =====
-export interface Entry {
-  _id: string;
-  datum: string;
-  voormiddag: string;
-  namiddag: string;
-  tools: string;
-  resultaat: string;
-}
+export const EntrySchema = z.object({
+  _id: z.string(),
+  datum: z.string(),
+  voormiddag: z.string(),
+  namiddag: z.string(),
+  tools: z.string(),
+  resultaat: z.string(),
+});
 
+export type Entry = z.infer<typeof EntrySchema>;
+
+// Form schema for stagedagboek
+export const StagedagboekFormSchema = z.object({
+  date: z.date({
+    required_error: "Een datum is verplicht.",
+  }),
+  voormiddag: z.string().min(1, "Voormiddag taken zijn verplicht."),
+  namiddag: z.string().min(1, "Namiddag taken zijn verplicht."),
+  tools: z.string().min(1, "Gebruikte tools zijn verplicht."),
+  result: z.string().min(1, "Resultaat is verplicht."),
+});
+
+export type StagedagboekFormFieldsProps = {
+  form: UseFormReturn<z.infer<typeof StagedagboekFormSchema>>;
+  date: Date | undefined;
+  setDate: (date: Date | undefined) => void;
+  isEditMode?: boolean;
+};
+
+// Component props that are highly specific to components
+// These could be moved to their component files in the future
 export interface StagedagboekHeaderProps {
   title: string;
   isDocent: boolean;
@@ -174,24 +193,6 @@ export interface StagedagboekViewProps {
   isDocent: boolean;
   title?: string;
 }
-
-// Form schema for stagedagboek
-export const StagedagboekFormSchema = z.object({
-  date: z.date({
-    required_error: "Een datum is verplicht.",
-  }),
-  voormiddag: z.string().min(1, "Voormiddag taken zijn verplicht."),
-  namiddag: z.string().min(1, "Namiddag taken zijn verplicht."),
-  tools: z.string().min(1, "Gebruikte tools zijn verplicht."),
-  result: z.string().min(1, "Resultaat is verplicht."),
-});
-
-export type StagedagboekFormFieldsProps = {
-  form: UseFormReturn<z.infer<typeof StagedagboekFormSchema>>;
-  date: Date | undefined;
-  setDate: (date: Date | undefined) => void;
-  isEditMode?: boolean;
-};
 
 // ===== UI Component Types =====
 export interface FilterSectionProps {
