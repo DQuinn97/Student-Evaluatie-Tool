@@ -34,66 +34,68 @@ const Login = () => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  let hasAccess = true;
-  let canLogIn = true;
+  const [hasAccess, setHasAccess] = useState(true);
+
   const onSubmit = async function () {
+    setHasAccess(true);
     setIsLoading(true);
     try {
-      let hasStorageAccess = await document.hasStorageAccess();
-      hasAccess = true;
-      canLogIn = true;
-      if (!hasStorageAccess) {
-        hasAccess = false;
-        canLogIn = false;
-        await document.requestStorageAccess().then(
-          () => {
-            hasAccess = true;
-          },
-          () => {
-            hasAccess = false;
-          },
-        );
-      }
-
-      if (hasAccess) {
-        const response = await api.post("/auth/login", {
-          email: form.getValues("email"),
-          wachtwoord: form.getValues("wachtwoord"),
-        });
-
-        if (!document.cookie.includes("tokenExists")) {
-          canLogIn = false;
-          await document.requestStorageAccess().then(
-            async () => {
-              await api.post("/auth/login", {
+      await document
+        .requestStorageAccess()
+        .then(
+          async () => {
+            await api
+              .post("/auth/login", {
                 email: form.getValues("email"),
                 wachtwoord: form.getValues("wachtwoord"),
+              })
+              .then(async (response) => {
+                if (!document.cookie.includes("tokenExists")) {
+                  await api
+                    .get("/auth/test")
+                    .then(() => {
+                      toast.success(response.data.message);
+                      setHasAccess(true);
+                      setTimeout(() => {
+                        navigate("/student/dashboard");
+                      }, 1500);
+                    })
+                    .catch(() => {
+                      setHasAccess(false);
+
+                      toast.error(
+                        "Deze app heeft cookies nodig om te kunnen werken. Geef toestemming om cookies te gebruiken in je browsersettings.",
+                      );
+                    });
+                } else {
+                  toast.success(response.data.message);
+                  setHasAccess(true);
+                  setTimeout(() => {
+                    navigate("/student/dashboard");
+                  }, 1500);
+                }
+              })
+              .catch((error) => {
+                setHasAccess(false);
+                throw error;
               });
-              if (!document.cookie.includes("tokenExists")) canLogIn = false;
-              else canLogIn = true;
-            },
-            () => {
-              canLogIn = false;
-            },
-          );
-        }
-
-        const data = response.data;
-
-        if (canLogIn && response.status === 200) {
-          toast.success(data.message);
-          setTimeout(() => {
-            navigate("/student/dashboard");
-          }, 1500);
-        } else {
-          if (data.message) toast.error(data.message);
-          else
+          },
+          () => {
+            setHasAccess(false);
             toast.error(
-              "Deze app heeft cookies nodig om te werken. Geef deze toegang om verder te gaan.",
+              "Deze app heeft cookies nodig om te kunnen werken. Geef toestemming om cookies te gebruiken in je browsersettings.",
             );
-        }
-      }
+          },
+        )
+        .catch(() => {
+          setHasAccess(false);
+
+          toast.error(
+            "Deze app heeft cookies nodig om te kunnen werken. Geef toestemming om cookies te gebruiken in je browsersettings.",
+          );
+        });
     } catch (error) {
+      setHasAccess(false);
       toast.error((error as { message: string }).message ?? "Onbekende fout");
     } finally {
       setIsLoading(false);
@@ -103,9 +105,10 @@ const Login = () => {
     <div className="flex h-screen flex-col items-center justify-center">
       <div className="text-2xl font-bold">Login</div>
       {!hasAccess && (
-        <div>
-          Deze app heeft toegang nodig tot cookies om te kunnen werken, geef
-          deze toegang om verder te gaan.
+        <div className="text-muted-foreground text-center text-sm">
+          De app heeft cookies nodig om te kunnen werken.
+          <br />
+          Geef toestemming om cookies te gebruiken in je browsersettings.
         </div>
       )}
       <Form {...form}>
