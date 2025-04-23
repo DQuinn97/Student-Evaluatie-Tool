@@ -26,7 +26,6 @@ const formSchema = z.object({
 
 const Login = () => {
   const { token } = useParams();
-  console.log(localStorage.getItem("token"));
   const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,7 +51,6 @@ const Login = () => {
           await api
             .post(`/auth/login?token=${token}`, { code_verifier: verifier })
             .then(async (response) => {
-              console.log(response.data.token);
               localStorage.setItem("token", response.data.token);
 
               await api
