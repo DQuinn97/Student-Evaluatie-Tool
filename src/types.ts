@@ -184,7 +184,6 @@ export interface EntryCardProps {
   isDocent: boolean;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
-  onExport: (entry: Entry) => void;
 }
 
 export interface StagedagboekViewProps {

@@ -1,13 +1,17 @@
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { format } from "date-fns";
 import { cn } from "../../lib/utils";
 import { nl } from "date-fns/locale";
+import { Switch } from "../ui/switch";
+// Import ReactQuill correctly - using the installed package name
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+import { useEffect, useState } from "react";
 
 // Titel veld component
 export const TitleField = ({
@@ -58,19 +62,41 @@ export const DescriptionField = ({
 }: {
   value: string;
   onChange: (value: string) => void;
-}) => (
-  <div>
-    <Label htmlFor="beschrijving">Beschrijving *</Label>
-    <Textarea
-      id="beschrijving"
-      placeholder="Beschrijf de taak"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="min-h-32"
-      required
-    />
-  </div>
-);
+}) => {
+  const [editorValue, setEditorValue] = useState(value);
+
+  useEffect(() => {
+    setEditorValue(value);
+  }, [value]);
+
+  const handleChange = (content: string) => {
+    setEditorValue(content);
+    onChange(content);
+  };
+
+  return (
+    <div>
+      <Label htmlFor="beschrijving">Beschrijving *</Label>
+      <ReactQuill
+        id="beschrijving"
+        theme="snow"
+        value={editorValue}
+        onChange={handleChange}
+        placeholder="Beschrijf de taak"
+        className="mt-1 mb-12 min-h-[200px]"
+        modules={{
+          toolbar: [
+            [{ header: [1, 2, 3, 4, 5, 6, false] }],
+            ["bold", "italic", "underline", "strike"],
+            [{ list: "ordered" }, { list: "bullet" }],
+            ["link", "image"],
+            ["clean"],
+          ],
+        }}
+      />
+    </div>
+  );
+};
 
 // Deadline veld component
 export const DeadlineField = ({
@@ -104,7 +130,8 @@ export const DeadlineField = ({
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={value ? new Date(value) : undefined}
+          selected={value ? new Date(value) : new Date()}
+          defaultMonth={new Date()}
           onSelect={(date) => {
             if (date) {
               const now = new Date();
@@ -238,20 +265,28 @@ export const AttachmentsField = ({
 
 // Publiceren veld component
 export const PublishField = ({
-  value,
+  value = true, // Set default to true
   onChange,
 }: {
   value: boolean;
   onChange: (value: boolean) => void;
-}) => (
-  <div className="flex items-center gap-2">
-    <input
-      id="isGepubliceerd"
-      type="checkbox"
-      checked={value}
-      onChange={(e) => onChange(e.target.checked)}
-      className="h-4 w-4"
-    />
-    <Label htmlFor="isGepubliceerd">Direct publiceren</Label>
-  </div>
-);
+}) => {
+  // Initialize with default value on first render
+  useEffect(() => {
+    if (value !== true) {
+      onChange(true);
+    }
+  }, []);
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Switch
+        id="isGepubliceerd"
+        checked={value}
+        onCheckedChange={onChange}
+        className="h-4 w-4"
+      />
+      <Label htmlFor="isGepubliceerd">Direct publiceren</Label>
+    </div>
+  );
+};

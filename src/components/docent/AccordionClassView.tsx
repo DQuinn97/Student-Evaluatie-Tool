@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
-import { DashboardCards } from "../dashboard/DashboardCards";
 import { DataTable } from "../shared/DataTable";
 import { FilterSection } from "../dashboard/FilterSection";
 import { PerformanceChart } from "../dashboard/PerformanceChart";
@@ -169,8 +168,6 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
       </Accordion.Header>
       <Accordion.Content className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up overflow-hidden">
         <div className="p-5">
-          <DashboardCards tasks={filteredData} />
-
           <div className="mx-10">
             <h2 className="mb-4 text-xl font-semibold">Overzicht taken</h2>
             <DataTable
