@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
           })}
         </div>
         <div className="font-medium">{data.titel}</div>
-        <div>{`${data.points}/${data.totalPoints} punten`}</div>
+        <div>{`${data.percentage}%`}</div>
       </div>
     );
   }
@@ -60,16 +60,25 @@ export const PerformanceChart = ({
     }
   };
 
-  const filteredData = data.filter(
-    (task) =>
-      (klas === "alle" || task.klas === klas) &&
-      (!type || type === "alle" || task.type === type),
-  );
+  // Preprocess data to include percentage values
+  const processedData = data
+    .filter(
+      (task) =>
+        (klas === "alle" || task.klas === klas) &&
+        (!type || type === "alle" || task.type === type),
+    )
+    .map((task) => ({
+      ...task,
+      percentage:
+        task.totalPoints > 0
+          ? parseFloat(((task.points / task.totalPoints) * 100).toFixed(1))
+          : 0,
+    }));
 
   return (
     <ChartContainer config={config} className="max-h-75 w-full p-4">
       <LineChart
-        data={filteredData}
+        data={processedData}
         margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
         onClick={handleClick}
         style={{ cursor: "pointer" }}
@@ -86,13 +95,13 @@ export const PerformanceChart = ({
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          domain={[0, "auto"]}
-          label={{ value: "Score", angle: -90, position: "insideLeft" }}
+          domain={[0, 100]}
+          label={{ value: "Score (%)", angle: -90, position: "insideLeft" }}
         />
         <ChartTooltip content={<CustomTooltip />} />
         <Line
           type="monotone"
-          dataKey="points"
+          dataKey="percentage"
           name="Score"
           stroke="var(--chart-1)"
           strokeWidth={2}

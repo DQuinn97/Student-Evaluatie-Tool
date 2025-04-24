@@ -135,16 +135,24 @@ export const AccordionClassView = ({ classData }: ClassViewProps) => {
       (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
     )
     .map((task) => {
-      const hasGradering = task.inzendingen?.[0]?.gradering;
-      const score = hasGradering?.score ?? 0;
-      const maxScore = hasGradering ? task.maxScore : 100;
+      // Calculate average score across all graded submissions
+      const gradedSubmissions = task.inzendingen.filter(
+        (inzending) => inzending.gradering,
+      );
 
-      if (!hasGradering) return null;
+      if (gradedSubmissions.length === 0) return null;
+
+      const maxScore = task.maxScore || 100;
+      const totalScore = gradedSubmissions.reduce((acc, inzending) => {
+        return acc + (inzending.gradering?.score || 0);
+      }, 0);
+
+      const averageScore = totalScore / gradedSubmissions.length;
 
       return {
         taakId: task._id,
         deadline: task.deadline,
-        points: score,
+        points: averageScore,
         totalPoints: maxScore,
         type: task.type,
         klas: classData.naam,
