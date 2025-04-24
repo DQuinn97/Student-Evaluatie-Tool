@@ -170,10 +170,14 @@ export const DocentTaskDetail = ({
           deadline={currentTask.deadline}
           status={currentTask.inzendingen?.length > 0 ? "Ingeleverd" : "Open"}
           gottenPoints={
-            currentTask.inzendingen?.reduce(
-              (sum, inzending) => sum + (inzending.gradering?.score ?? 0),
-              0,
-            ) / (currentTask.inzendingen?.length || 1)
+            currentTask.inzendingen
+              ?.filter((inzending) => inzending.gradering)
+              .reduce(
+                (sum, inzending) => sum + (inzending.gradering?.score ?? 0),
+                0,
+              ) /
+            (currentTask.inzendingen?.filter((inzending) => inzending.gradering)
+              .length || 1)
           }
           totalPoints={currentTask.maxScore ?? 100}
           isDocent={true}
