@@ -78,7 +78,7 @@ export const TaskMetrics = ({
     {
       title: "Score",
       icon: BadgeCheck,
-      value: isGraded ? `${gottenPoints}/${totalPoints}` : "-/-",
+      value: isGraded ? `${gottenPoints.toFixed(2)}/${totalPoints}` : "-/-",
       subtitle: isGraded && totalPoints > 0 ? `${scorePercentage}%` : undefined,
     },
   ];
