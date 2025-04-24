@@ -126,14 +126,6 @@ const Login = () => {
               <CardTitle className="text-center text-2xl font-bold">
                 Login
               </CardTitle>
-              {!hasAccess && (
-                <div className="text-muted-foreground text-center text-sm">
-                  De app heeft cookies nodig om te kunnen werken.
-                  <br />
-                  Geef toestemming om cookies te gebruiken in je
-                  browsersettings.
-                </div>
-              )}
             </CardHeader>
             <CardContent>
               <Form {...form}>
