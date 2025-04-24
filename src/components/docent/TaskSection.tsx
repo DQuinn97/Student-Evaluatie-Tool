@@ -93,14 +93,14 @@ export const TaskSection = ({
     );
 
     if (gradedSubmissions.length === 0) return null;
-
+    const graderingMaxScore = task.maxScore || 100;
     const totalScore = gradedSubmissions.reduce((acc, inzending) => {
       const graderingScore = inzending.gradering?.score || 0;
-      const graderingMaxScore = task.maxScore || 100;
-      return acc + (graderingScore / graderingMaxScore) * 100;
+
+      return acc + graderingScore;
     }, 0);
 
-    return totalScore / gradedSubmissions.length;
+    return (totalScore / gradedSubmissions.length / graderingMaxScore) * 100;
   };
 
   // Use the reusable task columns component
