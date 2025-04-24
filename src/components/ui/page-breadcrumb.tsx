@@ -14,6 +14,7 @@ import api from "@/api";
 interface BreadcrumbItem {
   label: string;
   path: string;
+  isClickable?: boolean;
 }
 
 interface DetailPageInfo {
@@ -53,6 +54,9 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
       titleField: "naam",
     },
   };
+
+  // Define segments that should not be clickable
+  const nonClickableSegments = ["docent", "student"];
 
   useEffect(() => {
     const fetchDetailTitle = async () => {
@@ -136,6 +140,7 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
       processedSegments.push({
         label: "Stagedagboek",
         path: currentPath,
+        isClickable: !nonClickableSegments.includes(segment),
       });
       continue;
     }
@@ -159,6 +164,7 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
     processedSegments.push({
       label,
       path: currentPath,
+      isClickable: !nonClickableSegments.includes(segment),
     });
   }
 
@@ -174,8 +180,12 @@ export function PageBreadcrumb({ userName }: { userName: string }) {
           <Fragment key={`${crumb.path}-${index}`}>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              {index === processedSegments.length - 1 ? (
-                <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+              {index === processedSegments.length - 1 || !crumb.isClickable ? (
+                <BreadcrumbPage
+                  className={!crumb.isClickable ? "text-muted-foreground" : ""}
+                >
+                  {crumb.label}
+                </BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
                   <Link to={crumb.path}>{crumb.label}</Link>

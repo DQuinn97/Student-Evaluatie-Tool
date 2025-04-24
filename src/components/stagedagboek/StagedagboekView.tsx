@@ -2,7 +2,7 @@ import { useNavigate } from "react-router";
 import { StagedagboekViewProps } from "@/types";
 import { useStagedagboek } from "./useStagedagboek";
 import { exportToPdf } from "./export-utils";
-import { EntryCard } from "./EntryCard";
+import { EntryAccordion } from "./EntryAccordion";
 import { StagedagboekHeader } from "./StagedagboekHeader";
 
 export const StagedagboekView = ({
@@ -44,7 +44,7 @@ export const StagedagboekView = ({
         onNewEntry={handleNewEntry}
       />
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {isLoading ? (
           <p className="text-muted-foreground">Laden...</p>
         ) : entries.length === 0 ? (
@@ -53,7 +53,7 @@ export const StagedagboekView = ({
           </p>
         ) : (
           entries.map((entry) => (
-            <EntryCard
+            <EntryAccordion
               key={entry._id}
               entry={entry}
               isDocent={isDocent}

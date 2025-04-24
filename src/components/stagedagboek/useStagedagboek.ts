@@ -15,6 +15,13 @@ export const useStagedagboek = (
   const [isLoading, setIsLoading] = useState(true);
   const [dagboekId, setDagboekId] = useState<string | null>(null);
 
+  // Helper function to sort entries by date (newest first)
+  const sortEntriesByDate = (entries: Entry[]): Entry[] => {
+    return [...entries].sort(
+      (a, b) => new Date(b.datum).getTime() - new Date(a.datum).getTime(),
+    );
+  };
+
   // Fetch the dagboek data
   useEffect(() => {
     const fetchDagboek = async () => {
@@ -33,7 +40,9 @@ export const useStagedagboek = (
 
             if (dagboek) {
               setDagboekId(dagboek._id);
-              setEntries(dagboek.stagedagen || []);
+              // Sort entries from newest to oldest
+              const sortedEntries = sortEntriesByDate(dagboek.stagedagen || []);
+              setEntries(sortedEntries);
 
               // If docent tries to view a student's stagedagboek with no entries, redirect them
               if (
@@ -77,7 +86,9 @@ export const useStagedagboek = (
           }
 
           setDagboekId(dagboek._id);
-          setEntries(dagboek.stagedagen || []);
+          // Sort entries from newest to oldest
+          const sortedEntries = sortEntriesByDate(dagboek.stagedagen || []);
+          setEntries(sortedEntries);
         }
       } catch (error) {
         console.error("Error fetching dagboek:", error);
