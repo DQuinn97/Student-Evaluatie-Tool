@@ -30,6 +30,10 @@ export const useClassManagement = () => {
       setIsLoading(true);
       const { data } = await api.get("/klassen");
       setClasses(data);
+      // Automatically select the first class if no class is currently selected
+      if (data.length > 0 && !selectedClass) {
+        setSelectedClass(data[0]._id);
+      }
     } catch (error) {
       toast.error("Er is een fout opgetreden bij het ophalen van de klassen");
     } finally {

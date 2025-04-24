@@ -11,5 +11,18 @@ const api = axios.create({
   },
   withCredentials: true,
 });
+api.interceptors.request.use(
+  (config) =>
+    ({
+      ...config,
+      headers: {
+        ...config.headers,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }) as any,
+  null,
+  { synchronous: true },
+);
 
 export default api;
