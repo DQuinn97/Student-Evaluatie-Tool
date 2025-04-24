@@ -131,6 +131,8 @@ const StudentDashboard = () => {
             new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
         )
         .map((task) => {
+          // For students, we only need their own submission, not an average
+          // Student dashboard shows personal scores
           const hasGradering = task.inzendingen?.[0]?.gradering;
           const score = hasGradering?.score ?? 0;
           const maxScore = task.maxScore;
