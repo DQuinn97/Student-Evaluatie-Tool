@@ -1,14 +1,7 @@
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Ellipsis } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Link } from "react-router";
 import { StudentRow } from "@/types";
 
@@ -122,24 +115,15 @@ export const studentColumns = (isDocent: boolean): ColumnDef<StudentRow>[] => [
   {
     id: "actions",
     cell: ({ row }: { row: Row<StudentRow> }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <Ellipsis className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Acties</DropdownMenuLabel>
-          <DropdownMenuItem asChild>
-            <Link
-              to={`/student/taken/${row.original._id}`}
-              className="block w-full"
-            >
-              Bekijk in detail
-            </Link>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Button variant="outline" asChild>
+        <Link
+          to={`/student/taken/${row.original._id}`}
+          className="flex w-full items-center justify-center"
+        >
+          <Eye />
+          Bekijk in detail
+        </Link>
+      </Button>
     ),
   },
 ];

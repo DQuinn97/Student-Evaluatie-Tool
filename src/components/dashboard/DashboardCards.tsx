@@ -1,7 +1,7 @@
 import { ClipboardCheck, TrendingUp, UsersRound } from "lucide-react";
-import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import api from "@/api";
 import { useEffect, useState } from "react";
+import { MetricCards } from "../shared/MetricCards";
 
 interface Task {
   _id: string;
@@ -131,41 +131,30 @@ export const DashboardCards = ({ tasks }: DashboardCardsProps) => {
   ).length;
   const totalTasks = tasks.length;
 
-  return (
-    <div className="my-10 flex gap-4 px-6">
-      <Card className="w-full">
-        <CardHeader className="flex flex-col gap-4">
-          <TrendingUp />
-          <CardTitle>Jouw gemiddelde</CardTitle>
-          <CardDescription className="text-center">
-            {personalAverage > 0 ? `${personalAverage.toFixed(1)}%` : "-/-"}
-          </CardDescription>
-        </CardHeader>
-      </Card>
-      <Card className="w-full">
-        <CardHeader className="flex flex-col gap-4">
-          <UsersRound />
-          <CardTitle>Klas gemiddelde</CardTitle>
-          <CardDescription className="text-center">
-            {error ? (
-              <span className="text-sm text-red-500">{error}</span>
-            ) : classAverage && classAverage > 0 ? (
-              `${classAverage.toFixed(1)}%`
-            ) : (
-              "-/-"
-            )}
-          </CardDescription>
-        </CardHeader>
-      </Card>
-      <Card className="w-full">
-        <CardHeader className="flex flex-col gap-4">
-          <ClipboardCheck />
-          <CardTitle>Ingeleverde taken</CardTitle>
-          <CardDescription className="text-center">
-            {completedTasks} / {totalTasks}
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    </div>
-  );
+  // Create metrics for the MetricCards component
+  const metrics = [
+    {
+      title: "Jouw gemiddelde",
+      icon: TrendingUp,
+      value: personalAverage > 0 ? `${personalAverage.toFixed(1)}%` : "-/-",
+    },
+    {
+      title: "Klas gemiddelde",
+      icon: UsersRound,
+      value: error ? (
+        <span className="text-sm text-red-500">{error}</span>
+      ) : classAverage && classAverage > 0 ? (
+        `${classAverage.toFixed(1)}%`
+      ) : (
+        "-/-"
+      ),
+    },
+    {
+      title: "Ingeleverde taken",
+      icon: ClipboardCheck,
+      value: `${completedTasks} / ${totalTasks}`,
+    },
+  ];
+
+  return <MetricCards metrics={metrics} />;
 };

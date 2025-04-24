@@ -9,23 +9,21 @@ import { z } from "zod";
 import { UseFormReturn } from "react-hook-form";
 
 // ===== User Types =====
-export type Student = {
+export interface User {
   _id: string;
   naam: string;
   achternaam: string;
   email: string;
   foto?: string;
+  gsm?: string;
   isDocent?: boolean;
-};
-
-export interface ProfileData {
-  id: string;
-  naam: string;
-  achternaam: string;
-  gsm: string;
-  foto: string;
-  email: string;
 }
+
+// Type for profile form/display where ID is represented differently
+export type ProfileData = Omit<User, "_id"> & { id: string };
+
+// Student is now just an alias for User for better semantics
+export type Student = User;
 
 // ===== Class/Group Types =====
 export type Class = {
@@ -56,17 +54,10 @@ export type Task = {
   };
 };
 
-export interface TaskDetail {
-  _id: string;
-  type: string;
-  titel: string;
+export interface TaskDetail extends Omit<Task, "klasgroep" | "inzendingen"> {
   git: string;
   url: string;
   beschrijving: string;
-  deadline: string;
-  weging: number;
-  maxScore: number;
-  isGepubliceerd: boolean;
   bijlagen: string[];
   klasgroep: {
     _id: string;
@@ -82,25 +73,32 @@ export interface TaskDetail {
       student?: {
         naam: string;
         achternaam: string;
+        email: string;
       };
     }
   >;
 }
 
-export interface TaskSubmission {
-  _id: string;
-  git: string;
-  live: string;
-  beschrijving: string;
-  bijlagen: string[];
-  gradering?: {
-    _id: string;
-    feedback: string;
-    score: number;
-    maxscore: number;
-  };
-}
+export const TaskSubmissionSchema = z.object({
+  _id: z.string(),
+  git: z.string(),
+  live: z.string(),
+  beschrijving: z.string(),
+  bijlagen: z.array(z.string()),
+  gradering: z
+    .object({
+      _id: z.string(),
+      feedback: z.string(),
+      score: z.number(),
+      maxscore: z.number(),
+    })
+    .optional(),
+});
 
+export type TaskSubmission = z.infer<typeof TaskSubmissionSchema>;
+
+// We'll keep these interfaces for now as they're used across components,
+// but they could be moved to their respective component files
 export interface TaskSubmissionFormProps {
   isSubmitted: boolean;
   initialSubmission?: TaskSubmission;
@@ -142,37 +140,16 @@ export type DeleteItem = {
 } | null;
 
 // ===== Stagedagboek Types =====
-export interface Entry {
-  _id: string;
-  datum: string;
-  voormiddag: string;
-  namiddag: string;
-  tools: string;
-  resultaat: string;
-}
+export const EntrySchema = z.object({
+  _id: z.string(),
+  datum: z.string(),
+  voormiddag: z.string(),
+  namiddag: z.string(),
+  tools: z.string(),
+  resultaat: z.string(),
+});
 
-export interface StagedagboekHeaderProps {
-  title: string;
-  isDocent: boolean;
-  onExportAll: () => void;
-  onBack: () => void;
-  onNewEntry?: () => void;
-}
-
-export interface EntryCardProps {
-  entry: Entry;
-  isDocent: boolean;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onExport: (entry: Entry) => void;
-}
-
-export interface StagedagboekViewProps {
-  klasId?: string;
-  studentId?: string;
-  isDocent: boolean;
-  title?: string;
-}
+export type Entry = z.infer<typeof EntrySchema>;
 
 // Form schema for stagedagboek
 export const StagedagboekFormSchema = z.object({
@@ -191,6 +168,30 @@ export type StagedagboekFormFieldsProps = {
   setDate: (date: Date | undefined) => void;
   isEditMode?: boolean;
 };
+
+// Component props that are highly specific to components
+// These could be moved to their component files in the future
+export interface StagedagboekHeaderProps {
+  title: string;
+  isDocent: boolean;
+  onExportAll: () => void;
+  onBack: () => void;
+  onNewEntry?: () => void;
+}
+
+export interface EntryCardProps {
+  entry: Entry;
+  isDocent: boolean;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+export interface StagedagboekViewProps {
+  klasId?: string;
+  studentId?: string;
+  isDocent: boolean;
+  title?: string;
+}
 
 // ===== UI Component Types =====
 export interface FilterSectionProps {

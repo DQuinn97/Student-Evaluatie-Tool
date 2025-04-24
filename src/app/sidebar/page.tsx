@@ -19,6 +19,7 @@ import { CircleUserRound } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import api from "@/api";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Storage key for sidebar state
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
@@ -32,6 +33,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
     return savedState !== null ? savedState === "true" : true;
   });
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleSidebarChange = (open: boolean) => {
     setSidebarOpen(open);
@@ -50,6 +52,18 @@ export default function Page({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     fetchUserData();
+
+    // Add event listener for profile updates
+    const handleProfileUpdate = () => {
+      fetchUserData();
+    };
+
+    window.addEventListener("user-profile-updated", handleProfileUpdate);
+
+    // Clean up
+    return () => {
+      window.removeEventListener("user-profile-updated", handleProfileUpdate);
+    };
   }, []);
 
   const logout = () => {
@@ -72,7 +86,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
         <header className="bg-background sticky top-0 z-10 mb-2 flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
-          <PageBreadcrumb userName={userName} />
+          {!isMobile && <PageBreadcrumb userName={userName} />}
           <div className="ml-auto flex items-center gap-4">
             <ModeToggler />
             <DropdownMenu>
@@ -93,9 +107,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
                 <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Link to="/profile" onClick={fetchUserData}>
-                    Profiel
-                  </Link>
+                  <Link to="/profile">Profiel</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
               </DropdownMenuContent>

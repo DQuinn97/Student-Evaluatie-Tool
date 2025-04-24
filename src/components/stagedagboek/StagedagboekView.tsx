@@ -19,11 +19,6 @@ export const StagedagboekView = ({
   const displayTitle =
     title || (studentName ? `Stagedagboek van ${studentName}` : "Stagedagboek");
 
-  // Handler for exporting an entry to PDF
-  const handleExportEntry = (entry: Entry) => {
-    exportToPdf(entry, studentName);
-  };
-
   // Handler for exporting all entries to PDF
   const handleExportAll = () => {
     exportToPdf(entries, studentName);
@@ -64,7 +59,6 @@ export const StagedagboekView = ({
               isDocent={isDocent}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onExport={handleExportEntry}
             />
           ))
         )}

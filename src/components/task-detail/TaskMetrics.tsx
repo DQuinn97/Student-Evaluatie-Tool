@@ -1,7 +1,7 @@
 import { format, isValid } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Badge } from "../ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { MetricCards } from "../shared/MetricCards";
+import { BadgeCheck, CalendarCheck, Clipboard } from "lucide-react";
 
 interface TaskMetricsProps {
   deadline: string;
@@ -30,104 +30,58 @@ export const TaskMetrics = ({
   const isDeadlinePassed = isValidDate && deadlineDate < new Date();
   const isLate = isDeadlinePassed && status === "Open";
   const displayStatus = isLate ? "Te laat" : status;
-  const hasGradering = typeof gottenPoints === "number";
+  const isGraded = typeof gottenPoints === "number";
   const scorePercentage =
     totalPoints > 0 && gottenPoints
       ? ((gottenPoints / totalPoints) * 100).toFixed(1)
       : 0;
 
-  return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <Card>
-        <CardHeader>
-          <CardTitle>Deadline</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>
-            {isValidDate
-              ? format(deadlineDate, "d MMMM yyyy HH:mm", {
-                  locale: nl,
-                })
-              : "Geen deadline ingesteld"}
-          </p>
-          <p className="text-muted-foreground text-sm">
-            {isDocent ? (
-              isDeadlinePassed ? (
-                displayStatus === "Te laat" ? (
-                  "Te laat ingeleverd"
-                ) : (
-                  "Deadline verstreken"
-                )
-              ) : (
-                "Nog tijd over"
-              )
-            ) : (
-              <>
-                {displayStatus === "Te laat" && "Te laat ingeleverd"}
-                {displayStatus === "Open" && "Nog tijd over"}
-                {displayStatus === "Ingeleverd" && "Op tijd ingeleverd"}
-              </>
-            )}
-          </p>
-        </CardContent>
-      </Card>
+  // Create metrics for the MetricCards component
+  const metrics = [
+    {
+      title: "Deadline",
+      icon: CalendarCheck,
+      value: isValidDate
+        ? format(deadlineDate, "d MMMM yyyy HH:mm", { locale: nl })
+        : "Geen deadline ingesteld",
+      subtitle: isDocent
+        ? isDeadlinePassed
+          ? displayStatus === "Te laat"
+            ? "Te laat ingeleverd"
+            : "Deadline verstreken"
+          : "Nog tijd over"
+        : displayStatus === "Te laat"
+          ? "Te laat ingeleverd"
+          : displayStatus === "Open"
+            ? "Nog tijd over"
+            : "Op tijd ingeleverd",
+    },
+    {
+      title: isDocent ? "Ingeleverd" : "Status",
+      icon: Clipboard,
+      value: isDocent ? `${submittedCount}/${totalStudents}` : "",
+      subtitle:
+        isDocent && totalStudents
+          ? `${((submittedCount / totalStudents) * 100).toFixed(1)}% ingeleverd`
+          : isGraded
+            ? "Score ontvangen"
+            : "",
+      badgeText: !isDocent ? displayStatus : undefined,
+      badgeVariant: !isDocent
+        ? ((displayStatus === "Ingeleverd"
+            ? "success"
+            : displayStatus === "Te laat"
+              ? "destructive"
+              : "default") as "success" | "destructive" | "default")
+        : undefined,
+    },
+    {
+      title: "Score",
+      icon: BadgeCheck,
+      value: isGraded ? `${gottenPoints}/${totalPoints}` : "-/-",
+      subtitle: isGraded && totalPoints > 0 ? `${scorePercentage}%` : undefined,
+    },
+  ];
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{isDocent ? "Ingeleverd" : "Status"}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isDocent ? (
-            <div className="flex flex-col gap-1">
-              <div className="text-2xl font-bold">
-                {submittedCount}/{totalStudents}
-              </div>
-              <p className="text-muted-foreground text-sm">
-                {totalStudents
-                  ? `${((submittedCount / totalStudents) * 100).toFixed(1)}% ingeleverd`
-                  : "Geen studenten in deze klas"}
-              </p>
-            </div>
-          ) : (
-            <>
-              <Badge
-                variant={
-                  displayStatus === "Ingeleverd"
-                    ? "success"
-                    : displayStatus === "Te laat"
-                      ? "destructive"
-                      : "default"
-                }
-              >
-                {displayStatus}
-              </Badge>
-              {hasGradering && (
-                <p className="text-muted-foreground mt-2 text-sm">
-                  Score ontvangen
-                </p>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Score</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-1">
-            <div className="text-2xl font-bold">
-              {hasGradering ? `${gottenPoints}/${totalPoints}` : "-/-"}
-            </div>
-            {hasGradering && totalPoints > 0 && (
-              <p className="text-muted-foreground text-sm">
-                {scorePercentage}%
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <MetricCards metrics={metrics} />;
 };

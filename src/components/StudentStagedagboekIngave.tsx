@@ -21,7 +21,7 @@ const StudentStagedagboekIngave = () => {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      date: new Date(),
+      date: new Date(), // Expliciete instelling op huidige datum (now)
       voormiddag: "",
       namiddag: "",
       tools: "",

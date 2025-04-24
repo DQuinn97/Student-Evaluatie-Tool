@@ -22,11 +22,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
+import { useState } from "react";
+import { StudentSelectionModal } from "./StudentSelectionModal";
 
 type StudentSectionProps = {
   students: Student[];
   isLoading: boolean;
-  onAddStudent: () => void;
+  onAddStudent: (studentIds: string[]) => void;
   onDeleteStudent: (id: string) => void;
   selectedClass: string | null;
 };
@@ -39,6 +41,7 @@ export const StudentSection = ({
   selectedClass,
 }: StudentSectionProps) => {
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const studentColumns = [
     {
@@ -119,6 +122,14 @@ export const StudentSection = ({
     pageSize: 10,
   });
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <AccordionItem value="students">
       <div className="flex items-center justify-between border-b">
@@ -126,7 +137,7 @@ export const StudentSection = ({
           <h3 className="text-xl font-semibold">Studenten</h3>
         </AccordionTrigger>
         <Button
-          onClick={onAddStudent}
+          onClick={handleOpenModal}
           disabled={!selectedClass || isLoading}
           className="m-2"
         >
@@ -147,6 +158,14 @@ export const StudentSection = ({
           />
         )}
       </AccordionContent>
+
+      {/* Student Selection Modal */}
+      <StudentSelectionModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={onAddStudent}
+        currentStudentIds={students.map((student) => student._id)}
+      />
     </AccordionItem>
   );
 };
