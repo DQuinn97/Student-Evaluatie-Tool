@@ -67,6 +67,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = () => {
+    localStorage.removeItem("token");
     api
       .post("/auth/logout")
       .then(() => {
