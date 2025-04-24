@@ -13,7 +13,7 @@ import StudentStagedagboekOverview from "./components/StudentStagedagboekOvervie
 import Sidebar from "./app/sidebar/page";
 import { ClassManagement } from "./components/docent/ClassManagement";
 import { DialogProvider } from "./contexts/DialogContext";
-import { InputDialog } from "./components/shared/InputDialog";
+import { FormDialog } from "./components/shared/FormDialog";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { StudentStagedagboekView } from "./components/docent/StudentStagedagboekView";
 import { AllStagedagboekenView } from "./components/docent/AllStagedagboekenView";
@@ -136,7 +136,7 @@ function App() {
             />
           </Routes>
           <Toaster />
-          <InputDialog />
+          <FormDialog />
         </>
       </UserProvider>
     </DialogProvider>

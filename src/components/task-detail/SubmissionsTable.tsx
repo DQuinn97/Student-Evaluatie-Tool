@@ -25,7 +25,7 @@ export const SubmissionsTable = ({
         if (student?.naam && student?.achternaam) {
           return `${student.naam} ${student.achternaam}`;
         }
-        return "Onbekend";
+        return student?.email;
       },
     },
     {

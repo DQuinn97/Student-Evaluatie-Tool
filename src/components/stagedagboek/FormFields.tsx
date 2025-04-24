@@ -47,7 +47,7 @@ export const FormFields = ({
                       )}
                       disabled={isEditMode}
                     >
-                      {date ? format(date, "PPP") : <span>Pick a date</span>}
+                      {date ? format(date, "PPP") : <span>Vandaag</span>}
                       <CalendarIcon className="ml-auto h-4 w-4" />
                     </Button>
                   </FormControl>
@@ -56,8 +56,9 @@ export const FormFields = ({
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={date}
+                      selected={date || new Date()}
                       onSelect={setDate}
+                      defaultMonth={new Date()}
                       disabled={(date) =>
                         date < new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)
                       }

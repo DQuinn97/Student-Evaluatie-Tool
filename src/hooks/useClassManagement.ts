@@ -118,35 +118,37 @@ export const useClassManagement = () => {
     }
   };
 
-  const handleAddStudent = async () => {
-    if (!selectedClass) return;
-    openDialog({
-      title: "Student Toevoegen",
-      description: "Voer het ID van de student in",
-      placeholder: "Student ID",
-      confirmLabel: "Toevoegen",
-      onConfirm: async (studentId) => {
-        if (!studentId) return;
-        try {
-          setIsLoading(true);
-          await api.post(`/klassen/${selectedClass}/studenten`, {
-            studentId,
-          });
-          const { data } = await api.get(`/klassen/${selectedClass}`);
-          // Filter docenten uit de lijst na toevoegen van een student
-          const filteredStudents = (data.studenten || []).filter(
-            (student: Student) => !student.isDocent,
-          );
-          setStudents(filteredStudents);
-        } catch (error) {
-          toast.error(
-            "Er is een fout opgetreden bij het toevoegen van de student",
-          );
-        } finally {
-          setIsLoading(false);
-        }
-      },
-    });
+  const handleAddStudent = async (studentIds: string[]) => {
+    if (!selectedClass || studentIds.length === 0) return;
+
+    try {
+      setIsLoading(true);
+
+      // Add students one by one
+      const promises = studentIds.map((studentId) =>
+        api.post(`/klassen/${selectedClass}/studenten`, { studentId }),
+      );
+
+      await Promise.all(promises);
+
+      // Refresh the student list
+      const { data } = await api.get(`/klassen/${selectedClass}`);
+      // Filter docenten uit de lijst na toevoegen van studenten
+      const filteredStudents = (data.studenten || []).filter(
+        (student: Student) => !student.isDocent,
+      );
+      setStudents(filteredStudents);
+
+      toast.success(
+        `${studentIds.length} student${studentIds.length > 1 ? "en" : ""} succesvol toegevoegd`,
+      );
+    } catch (error) {
+      toast.error(
+        "Er is een fout opgetreden bij het toevoegen van de studenten",
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDeleteStudent = async (studentId: string) => {

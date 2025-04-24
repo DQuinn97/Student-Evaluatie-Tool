@@ -42,7 +42,7 @@ export const NameDialog = ({
 
     setIsUpdatingName(true);
     try {
-      const response = await api.patch("/profiel", {
+      const response = await api.post("/profiel/data", {
         naam: firstName,
         achternaam: lastName,
       });

@@ -17,6 +17,13 @@ import { Input } from "../components/ui/input";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "../components/ui/card";
 import pkceChallenge from "pkce-challenge";
 
 const formSchema = z.object({
@@ -108,75 +115,106 @@ const Login = () => {
       }, 1500);
     }
   };
+
   return (
-    <div className="flex h-screen flex-col items-center justify-center">
+    <div className="flex h-screen flex-col items-center justify-center p-4">
       {!token ? (
         <>
-          <div className="text-2xl font-bold">Login</div>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="m-4 space-y-8"
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="wachtwoord"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Wachtwoord</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Wachtwoord"
-                        type="password"
-                        autoComplete="off"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button
-                disabled={isLoading}
-                className="w-full"
-                aria-busy={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    Checking
-                  </>
-                ) : (
-                  "Login"
-                )}
-              </Button>
-            </form>
-            <div className="text-muted-foreground text-sm">
-              Heb je nog geen account?{" "}
-              <Link to="/register" className="text-blue-500">
-                Registreren
-              </Link>
-            </div>
-            <div className="text-muted-foreground text-sm">
-              Wachtwoord vergeten?{" "}
-              <Link to="/reset-password" className="text-blue-500">
-                Reset
-              </Link>
-            </div>
-          </Form>
+          {" "}
+          <Card className="w-full max-w-md shadow-md">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-center text-2xl font-bold">
+                Login
+              </CardTitle>
+              {!hasAccess && (
+                <div className="text-muted-foreground text-center text-sm">
+                  De app heeft cookies nodig om te kunnen werken.
+                  <br />
+                  Geef toestemming om cookies te gebruiken in je
+                  browsersettings.
+                </div>
+              )}
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Email"
+                            {...field}
+                            className="h-10"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="wachtwoord"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Wachtwoord</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Wachtwoord"
+                            type="password"
+                            autoComplete="off"
+                            className="h-10"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    disabled={isLoading}
+                    className="mt-6 w-full"
+                    aria-busy={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Checking
+                      </>
+                    ) : (
+                      "Login"
+                    )}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-2 border-t pt-4">
+              <div className="text-muted-foreground text-center text-sm">
+                Heb je nog geen account?{" "}
+                <Link
+                  to="/register"
+                  className="font-medium text-blue-500 hover:text-blue-700"
+                >
+                  Registreren
+                </Link>
+              </div>
+              <div className="text-muted-foreground text-center text-sm">
+                Wachtwoord vergeten?{" "}
+                <Link
+                  to="/reset-password"
+                  className="font-medium text-blue-500 hover:text-blue-700"
+                >
+                  Reset
+                </Link>
+              </div>
+            </CardFooter>
+          </Card>
         </>
       ) : (
         <>
@@ -194,4 +232,5 @@ const Login = () => {
     </div>
   );
 };
+
 export default Login;

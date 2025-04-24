@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { FileDown, Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { EntryCardProps } from "@/types";
 
 export const EntryCard = ({
@@ -7,7 +7,6 @@ export const EntryCard = ({
   isDocent,
   onEdit,
   onDelete,
-  onExport,
 }: EntryCardProps) => {
   // Format the date for display
   const formattedDate = new Date(entry.datum).toLocaleDateString("nl-BE", {
@@ -22,14 +21,6 @@ export const EntryCard = ({
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">{formattedDate}</h2>
         <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="icon"
-            title="Exporteer als PDF"
-            onClick={() => onExport(entry)}
-          >
-            <FileDown className="size-4" />
-          </Button>
           {!isDocent && (
             <>
               <Button

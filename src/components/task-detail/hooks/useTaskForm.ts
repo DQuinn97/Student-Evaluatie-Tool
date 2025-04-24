@@ -44,7 +44,7 @@ export const useTaskForm = ({
   const [taskData, setTaskData] = useState<TaskFormState>({
     titel: initialTask?.titel || "",
     beschrijving: initialTask?.beschrijving || "",
-    deadline: initialTask?.deadline || "",
+    deadline: initialTask?.deadline || new Date().toISOString(),
     weging: initialTask?.weging || 0,
     maxScore: initialTask?.maxScore || 100,
     type: initialTask?.type || "taak",
