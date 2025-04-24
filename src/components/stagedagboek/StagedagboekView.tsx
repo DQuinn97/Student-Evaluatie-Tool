@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { Entry, StagedagboekViewProps } from "@/types";
+import { StagedagboekViewProps } from "@/types";
 import { useStagedagboek } from "./useStagedagboek";
 import { exportToPdf } from "./export-utils";
 import { EntryCard } from "./EntryCard";

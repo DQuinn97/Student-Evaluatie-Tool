@@ -33,10 +33,24 @@ export const DocentTaskDetail = ({
     null,
   );
   const [totalStudents, setTotalStudents] = useState<number>(0);
-  const [currentTask, setCurrentTask] = useState(task);
+  const [currentTask, setCurrentTask] = useState(
+    task
+      ? {
+          ...task,
+          isGepubliceerd: task.isGepubliceerd ?? false, // Ensure isGepubliceerd is always defined
+        }
+      : null,
+  );
 
   useEffect(() => {
-    setCurrentTask(task);
+    setCurrentTask(
+      task
+        ? {
+            ...task,
+            isGepubliceerd: task.isGepubliceerd ?? false, // Ensure isGepubliceerd is always defined
+          }
+        : null,
+    );
   }, [task]);
 
   useEffect(() => {
@@ -63,7 +77,10 @@ export const DocentTaskDetail = ({
     try {
       // Haal de bijgewerkte taakgegevens op
       const { data } = await api.get(`/taken/${currentTask._id}`);
-      setCurrentTask(data);
+      setCurrentTask({
+        ...data,
+        isGepubliceerd: data.isGepubliceerd ?? false, // Ensure isGepubliceerd is always defined
+      });
     } catch (error) {
       console.error("Error refreshing task data:", error);
       toast.error("Kon de taakgegevens niet verversen");
@@ -91,11 +108,6 @@ export const DocentTaskDetail = ({
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Nieuwe taak aanmaken</h1>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <p className="text-muted-foreground">
-              Klas: {currentTask?.klasgroep.naam}
-            </p>
-          </div>
         </div>
 
         <CreateTaskForm

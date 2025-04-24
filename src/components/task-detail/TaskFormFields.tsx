@@ -22,7 +22,9 @@ export const TitleField = ({
   onChange: (value: string) => void;
 }) => (
   <div>
-    <Label htmlFor="titel">Titel *</Label>
+    <Label htmlFor="titel" className="mb-2">
+      Titel
+    </Label>
     <Input
       id="titel"
       placeholder="Voer een titel in"
@@ -42,7 +44,9 @@ export const TypeField = ({
   onChange: (value: string) => void;
 }) => (
   <div>
-    <Label htmlFor="type">Type</Label>
+    <Label htmlFor="type" className="mb-2">
+      Type
+    </Label>
     <select
       id="type"
       className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -76,7 +80,9 @@ export const DescriptionField = ({
 
   return (
     <div>
-      <Label htmlFor="beschrijving">Beschrijving *</Label>
+      <Label htmlFor="beschrijving" className="mb-2">
+        Beschrijving
+      </Label>
       <ReactQuill
         id="beschrijving"
         theme="snow"
@@ -107,7 +113,9 @@ export const DeadlineField = ({
   onChange: (value: string) => void;
 }) => (
   <div>
-    <Label htmlFor="deadline">Deadline *</Label>
+    <Label htmlFor="deadline" className="mb-2">
+      Deadline
+    </Label>
     <Popover>
       <PopoverTrigger asChild>
         <Button
@@ -177,7 +185,9 @@ export const WeightField = ({
   onChange: (value: number) => void;
 }) => (
   <div>
-    <Label htmlFor="weging">Weging</Label>
+    <Label htmlFor="weging" className="mb-2">
+      Weging
+    </Label>
     <Input
       id="weging"
       type="number"
@@ -199,7 +209,9 @@ export const ScoreField = ({
   onChange: (value: number) => void;
 }) => (
   <div>
-    <Label htmlFor="maxScore">Maximale score *</Label>
+    <Label htmlFor="maxScore" className="mb-2">
+      Maximale score
+    </Label>
     <Input
       id="maxScore"
       type="number"
@@ -213,7 +225,6 @@ export const ScoreField = ({
       }}
       required
     />
-    <span className="text-muted-foreground text-xs">Verplicht veld</span>
   </div>
 );
 
@@ -228,7 +239,9 @@ export const SubjectField = ({
   subjects: Array<{ _id: string; naam: string }>;
 }) => (
   <div>
-    <Label htmlFor="vak">Vak</Label>
+    <Label htmlFor="vak" className="mb-2">
+      Vak
+    </Label>
     <select
       id="vak"
       className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -252,7 +265,9 @@ export const AttachmentsField = ({
   onChange: (files: File[]) => void;
 }) => (
   <div>
-    <Label htmlFor="bijlagen">Bijlagen</Label>
+    <Label htmlFor="bijlagen" className="mb-2">
+      Bijlagen
+    </Label>
     <input
       id="bijlagen"
       type="file"
