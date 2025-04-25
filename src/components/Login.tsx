@@ -108,7 +108,7 @@ const Login = () => {
           }, 1500);
         });
     } catch (error) {
-      toast.error((error as { message: string }).message ?? "Onbekende fout");
+      toast.error("Verkeerd wachtwoord of email...");
     } finally {
       setTimeout(() => {
         setIsLoading(false);
