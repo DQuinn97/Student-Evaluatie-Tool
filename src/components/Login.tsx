@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import api from "../api";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import { Button } from "../components/ui/button";
 import {
@@ -34,6 +35,7 @@ const formSchema = z.object({
 const Login = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -120,7 +122,6 @@ const Login = () => {
     <div className="flex h-screen flex-col items-center justify-center p-4">
       {!token ? (
         <>
-          {" "}
           <Card className="w-full max-w-md shadow-md">
             <CardHeader className="space-y-1">
               <CardTitle className="text-center text-2xl font-bold">
@@ -133,42 +134,52 @@ const Login = () => {
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-4"
                 >
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Email"
-                            {...field}
-                            className="h-10"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="wachtwoord"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Wachtwoord</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Wachtwoord"
-                            type="password"
-                            autoComplete="off"
-                            className="h-10"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div
+                    className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-x-6 gap-y-2`}
+                  >
+                    <div className={isMobile ? "" : "col-span-2"}>
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Email"
+                                {...field}
+                                className="h-10"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className={isMobile ? "" : "col-span-2"}>
+                      <FormField
+                        control={form.control}
+                        name="wachtwoord"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Wachtwoord</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Wachtwoord"
+                                type="password"
+                                autoComplete="off"
+                                className="h-10"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
                   <Button
                     disabled={isLoading}
                     className="mt-6 w-full"
@@ -217,7 +228,7 @@ const Login = () => {
               height={40}
             />
             <br />
-            Login verifiëren...
+            Login verifiëren...
           </div>
         </>
       )}
