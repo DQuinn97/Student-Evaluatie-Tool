@@ -4,6 +4,7 @@ import { Class, Task, Student } from "@/types";
 import { useDialog } from "@/contexts/DialogContext";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { getSelectedClass, saveSelectedClass } from "@/lib/classStorage";
 
 export const useClassManagement = () => {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -13,6 +14,14 @@ export const useClassManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { openDialog } = useDialog();
   const navigate = useNavigate();
+
+  // Custom setter to update state and localStorage
+  const updateSelectedClass = (classId: string | null) => {
+    setSelectedClass(classId);
+    if (classId) {
+      saveSelectedClass(classId);
+    }
+  };
 
   useEffect(() => {
     fetchClasses();
@@ -30,9 +39,22 @@ export const useClassManagement = () => {
       setIsLoading(true);
       const { data } = await api.get("/klassen");
       setClasses(data);
-      // Automatically select the first class if no class is currently selected
-      if (data.length > 0 && !selectedClass) {
+
+      // Get the saved class from localStorage
+      const savedClassId = getSelectedClass();
+
+      // Check if saved class exists in the returned classes
+      const classExists = data.some((c: Class) => c._id === savedClassId);
+
+      // Automatically select the saved class if it exists, otherwise use the first class
+      if (savedClassId && classExists) {
+        setSelectedClass(savedClassId);
+      } else if (data.length > 0 && !selectedClass) {
         setSelectedClass(data[0]._id);
+        // Also save this to localStorage for future use
+        if (data[0]._id) {
+          saveSelectedClass(data[0]._id);
+        }
       }
     } catch (error) {
       toast.error("Er is een fout opgetreden bij het ophalen van de klassen");
@@ -186,7 +208,7 @@ export const useClassManagement = () => {
     students,
     selectedClass,
     isLoading,
-    setSelectedClass,
+    setSelectedClass: updateSelectedClass,
     handleCreateClass,
     handleCreateTask,
     handleDuplicateTask,

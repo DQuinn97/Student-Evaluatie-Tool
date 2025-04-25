@@ -11,15 +11,10 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { BookText } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ClassSelector } from "../shared/ClassSelector";
+import { getSelectedClass } from "@/lib/classStorage";
 
 interface StudentWithStageInfo extends Student {
   hasStagedagboek?: boolean;
@@ -40,7 +35,16 @@ export const AllStagedagboekenView = () => {
         setIsLoading(true);
         const { data } = await api.get("/klassen");
         setClasses(data);
-        if (data.length > 0) {
+
+        // Get saved class from localStorage
+        const savedClassId = getSelectedClass();
+
+        // Check if saved class exists in the returned classes
+        const classExists = data.some((c: Class) => c._id === savedClassId);
+
+        if (savedClassId && classExists) {
+          setSelectedClass(savedClassId);
+        } else if (data.length > 0) {
           setSelectedClass(data[0]._id);
         }
       } catch (error) {
@@ -108,11 +112,6 @@ export const AllStagedagboekenView = () => {
     fetchStudents();
   }, [selectedClass]);
 
-  // Handle class change
-  const handleClassChange = (value: string) => {
-    setSelectedClass(value);
-  };
-
   // Navigate to student's stagedagboek
   const viewStagedagboek = (student: StudentWithStageInfo) => {
     if (!selectedClass) return;
@@ -132,23 +131,13 @@ export const AllStagedagboekenView = () => {
       <h1 className="mb-6 text-3xl font-bold">Stagedagboeken Overzicht</h1>
 
       <div className="mb-6">
-        <h2 className="mb-2 text-xl font-semibold">Selecteer een klas</h2>
-        <Select
-          value={selectedClass || ""}
-          onValueChange={handleClassChange}
-          disabled={isLoading || classes.length === 0}
-        >
-          <SelectTrigger className="w-full sm:w-72">
-            <SelectValue placeholder="Selecteer een klas" />
-          </SelectTrigger>
-          <SelectContent>
-            {classes.map((classItem) => (
-              <SelectItem key={classItem._id} value={classItem._id}>
-                {classItem.naam}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <ClassSelector
+          classes={classes}
+          selectedClass={selectedClass}
+          onSelectClass={setSelectedClass}
+          isLoading={isLoading}
+          label="Selecteer een klas"
+        />
       </div>
 
       {isLoading ? (
