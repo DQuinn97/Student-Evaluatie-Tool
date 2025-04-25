@@ -5,7 +5,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
+import { QuillEditor } from "@/components/ui/quill-editor";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -79,9 +79,8 @@ export const FormFields = ({
                     Uitgevoerde werkzaamheden voormiddag
                   </FormLabel>
                   <FormControl>
-                    <Textarea
+                    <QuillEditor
                       placeholder="Geef een korte opsomming van je taken."
-                      rows={5}
                       {...field}
                     />
                   </FormControl>
@@ -99,9 +98,8 @@ export const FormFields = ({
                     Uitgevoerde werkzaamheden namiddag
                   </FormLabel>
                   <FormControl>
-                    <Textarea
+                    <QuillEditor
                       placeholder="Geef een korte opsomming van je taken."
-                      rows={5}
                       {...field}
                     />
                   </FormControl>
@@ -119,9 +117,8 @@ export const FormFields = ({
                     Gebruikte software/tools
                   </FormLabel>
                   <FormControl>
-                    <Textarea
+                    <QuillEditor
                       placeholder="Vermeld de tools waarmee je aan de slag ging."
-                      rows={5}
                       {...field}
                     />
                   </FormControl>
@@ -139,9 +136,8 @@ export const FormFields = ({
                     Resultaat
                   </FormLabel>
                   <FormControl>
-                    <Textarea
+                    <QuillEditor
                       placeholder="Formuleer bondig een eindconclusie per dag. Was je tevreden? Minder tevreden? Reacties stagementor?"
-                      rows={5}
                       {...field}
                     />
                   </FormControl>

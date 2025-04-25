@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
+import { QuillEditor } from "../ui/quill-editor";
 import { useParams } from "react-router";
 import { TaskSubmission, TaskSubmissionFormProps } from "@/types";
 import api from "../../api";
@@ -98,14 +98,14 @@ export const TaskSubmissionForm = ({
 
         <div>
           <Label>Beschrijving</Label>
-          <Textarea
+          <QuillEditor
             placeholder="Voeg extra context toe aan je inzending"
             className="mt-2"
             defaultValue={submission.beschrijving || ""}
-            onChange={(e) =>
+            onChange={(value) =>
               setSubmission((prev) => ({
                 ...prev,
-                beschrijving: e.target.value,
+                beschrijving: value,
               }))
             }
             disabled={isSubmitted || isDocent}

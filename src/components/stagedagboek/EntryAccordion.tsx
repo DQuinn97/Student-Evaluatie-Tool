@@ -22,6 +22,16 @@ export const EntryAccordion = ({
     day: "numeric",
   });
 
+  // Function to safely render HTML content
+  const renderHtmlContent = (content: string) => {
+    return (
+      <div
+        className="text-muted-foreground mt-1"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  };
+
   return (
     <Accordion type="single" collapsible className="w-full rounded-lg border">
       <AccordionItem value={entry._id} className="border-none">
@@ -60,19 +70,19 @@ export const EntryAccordion = ({
           <div className="space-y-4">
             <div>
               <h3 className="font-medium">Voormiddag</h3>
-              <p className="text-muted-foreground mt-1">{entry.voormiddag}</p>
+              {renderHtmlContent(entry.voormiddag)}
             </div>
             <div>
               <h3 className="font-medium">Namiddag</h3>
-              <p className="text-muted-foreground mt-1">{entry.namiddag}</p>
+              {renderHtmlContent(entry.namiddag)}
             </div>
             <div>
               <h3 className="font-medium">Gebruikte tools</h3>
-              <p className="text-muted-foreground mt-1">{entry.tools}</p>
+              {renderHtmlContent(entry.tools)}
             </div>
             <div>
               <h3 className="font-medium">Resultaat</h3>
-              <p className="text-muted-foreground mt-1">{entry.resultaat}</p>
+              {renderHtmlContent(entry.resultaat)}
             </div>
           </div>
         </AccordionContent>

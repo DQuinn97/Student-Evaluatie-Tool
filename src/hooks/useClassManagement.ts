@@ -88,15 +88,52 @@ export const useClassManagement = () => {
   const handleCreateClass = async () => {
     openDialog({
       title: "Nieuwe Klas",
-      description: "Voer de naam van de nieuwe klas in",
-      placeholder: "Klasnaam",
+      description: "Voer de gegevens van de nieuwe klas in",
       confirmLabel: "Aanmaken",
-      onConfirm: async (className) => {
-        if (!className) return;
+      fields: [
+        {
+          name: "naam",
+          label: "Klasnaam",
+          type: "text",
+          required: true,
+          placeholder: "Voer een klasnaam in",
+        },
+        {
+          name: "beginjaar",
+          label: "Beginjaar",
+          type: "number",
+          required: true,
+          min: new Date().getFullYear(),
+          max: 2030,
+          placeholder: "Beginjaar",
+          step: 1,
+        },
+        {
+          name: "eindjaar",
+          label: "Eindjaar",
+          type: "number",
+          required: true,
+          min: new Date().getFullYear(),
+          max: 2030,
+          placeholder: "Eindjaar",
+          step: 1,
+        },
+      ],
+      onConfirm: async (values) => {
+        const { naam, beginjaar, eindjaar } = values;
+        if (!naam || !beginjaar || !eindjaar) return;
+
         try {
           setIsLoading(true);
-          const { data } = await api.post("/klassen", { naam: className });
+          const { data } = await api.post("/klassen", {
+            naam,
+            beginjaar: Number(beginjaar),
+            eindjaar: Number(eindjaar),
+          });
           setClasses([...classes, data]);
+          // Selecteer automatisch de nieuwe klas
+          updateSelectedClass(data._id);
+          toast.success("Klas succesvol aangemaakt");
         } catch (error) {
           toast.error("Er is een fout opgetreden bij het aanmaken van de klas");
         } finally {
