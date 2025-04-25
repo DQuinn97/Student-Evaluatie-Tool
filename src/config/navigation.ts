@@ -31,6 +31,10 @@ const docentNavigation: NavItem[] = [
     path: "/docent/klasbeheer",
   },
   {
+    label: "Studenten Resultaten",
+    path: "/docent/studentresultaten",
+  },
+  {
     label: "Stagedagboeken",
     path: "/docent/stagedagboeken",
   },
@@ -43,6 +47,7 @@ export const pathLabels: Record<string, string> = {
   profile: "Profiel",
   klasbeheer: "Klasbeheer",
   stagedagboeken: "Stagedagboeken",
+  studentresultaten: "Studenten Resultaten",
 };
 
 export { studentNavigation, docentNavigation };

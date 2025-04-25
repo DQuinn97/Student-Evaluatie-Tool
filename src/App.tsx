@@ -18,6 +18,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { StudentStagedagboekView } from "./components/docent/StudentStagedagboekView";
 import { AllStagedagboekenView } from "./components/docent/AllStagedagboekenView";
 import { UserProvider } from "./contexts/UserContext";
+import { StudentResultsAccordion } from "./components/docent/StudentResultsAccordion";
 
 function App() {
   return (
@@ -118,6 +119,14 @@ function App() {
                         element={
                           <ProtectedRoute allowedRole="docent">
                             <AllStagedagboekenView />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/docent/studentresultaten"
+                        element={
+                          <ProtectedRoute allowedRole="docent">
+                            <StudentResultsAccordion />
                           </ProtectedRoute>
                         }
                       />
