@@ -241,3 +241,58 @@ export interface UseTableConfigProps<TData> {
   columns: any[];
   pageSize?: number;
 }
+
+// ===== Component Props Types =====
+export interface ClassSelectorProps {
+  classes: Class[];
+  selectedClass: string | null;
+  onSelectClass: (id: string) => void;
+  isLoading?: boolean;
+  width?: string;
+  placeholder?: string;
+  label?: string;
+}
+
+export type ProfileFormProps = {
+  formData: ProfileData;
+  setFormData: React.Dispatch<React.SetStateAction<ProfileData>>;
+  onSubmit: (event: React.FormEvent) => void;
+  loading: boolean;
+};
+
+export type TaskSectionProps = {
+  tasks: Task[];
+  isLoading: boolean;
+  onCreateTask: () => void;
+  onDuplicateTask: (id: string) => void;
+  onDeleteTask: (id: string) => void;
+  onUpdateTask?: (id: string, updatedFields: Partial<Task>) => void;
+  selectedClass: string | null;
+};
+
+export type StudentSectionProps = {
+  students: Student[];
+  isLoading: boolean;
+  onAddStudent: (studentIds: string[]) => void;
+  onDeleteStudent: (id: string) => void;
+  selectedClass: string | null;
+};
+
+export type ClassViewProps = {
+  classData: {
+    _id: string;
+    naam: string;
+    taken: Task[];
+  };
+};
+
+export interface TaskColumnsOptions {
+  navigate: (path: string) => void;
+  onDuplicateTask?: (id: string) => void;
+  onDeleteTask?: (id: string) => void;
+  publishingTask?: string | null;
+  handlePublishToggle?: (taskId: string, isPublished: boolean) => void;
+  calculateAverageScore?: (task: Task) => number | null;
+  totalStudentsByClass?: Record<string, number> | number;
+  isSimpleView?: boolean;
+}

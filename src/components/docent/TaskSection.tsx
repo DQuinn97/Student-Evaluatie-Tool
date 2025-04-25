@@ -8,21 +8,11 @@ import {
 import { DataTable } from "../shared/DataTable";
 import { useTableConfig } from "@/hooks/useTableConfig";
 import { useNavigate } from "react-router";
-import { Task } from "@/types";
+import { Task, TaskSectionProps } from "@/types";
 import { useState, useEffect } from "react";
 import api from "@/api";
 import { toast } from "sonner";
 import { getTaskColumns } from "../table/taskColumns";
-
-type TaskSectionProps = {
-  tasks: Task[];
-  isLoading: boolean;
-  onCreateTask: () => void;
-  onDuplicateTask: (id: string) => void;
-  onDeleteTask: (id: string) => void;
-  onUpdateTask?: (id: string, updatedFields: Partial<Task>) => void;
-  selectedClass: string | null;
-};
 
 export const TaskSection = ({
   tasks,

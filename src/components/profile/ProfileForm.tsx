@@ -1,15 +1,8 @@
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { ProfileData } from "../../types";
+import { ProfileFormProps } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-type ProfileFormProps = {
-  formData: ProfileData;
-  setFormData: React.Dispatch<React.SetStateAction<ProfileData>>;
-  onSubmit: (event: React.FormEvent) => void;
-  loading: boolean;
-};
 
 export const ProfileForm = ({
   formData,

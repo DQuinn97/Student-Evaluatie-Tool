@@ -9,33 +9,11 @@ import { ChartConfig } from "@/components/ui/chart";
 import { useNavigate } from "react-router";
 import api from "@/api";
 import { getTaskColumns } from "../table/taskColumns";
+import { ClassViewProps, Task } from "@/types";
 
 const chartConfig = {
   points: { label: "Score" },
 } satisfies ChartConfig;
-
-type Task = {
-  _id: string;
-  titel: string;
-  type: string;
-  deadline: string;
-  maxScore: number;
-  inzendingen: Array<{
-    _id: string;
-    gradering: {
-      score: number;
-      feedback?: string;
-    };
-  }>;
-};
-
-type ClassViewProps = {
-  classData: {
-    _id: string;
-    naam: string;
-    taken: Task[];
-  };
-};
 
 export const AccordionClassView = ({ classData }: ClassViewProps) => {
   const navigate = useNavigate();

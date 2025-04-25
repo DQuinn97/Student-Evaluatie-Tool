@@ -15,18 +15,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Task } from "@/types";
-
-interface TaskColumnsOptions {
-  navigate: (path: string) => void;
-  onDuplicateTask?: (id: string) => void;
-  onDeleteTask?: (id: string) => void;
-  publishingTask?: string | null;
-  handlePublishToggle?: (taskId: string, isPublished: boolean) => void;
-  calculateAverageScore: (task: Task) => number | null;
-  totalStudentsByClass: Record<string, number> | number;
-  isSimpleView?: boolean;
-}
+import { TaskColumnsOptions } from "@/types";
 
 export const getTaskColumns = ({
   navigate,
@@ -34,8 +23,8 @@ export const getTaskColumns = ({
   onDeleteTask,
   publishingTask,
   handlePublishToggle,
-  calculateAverageScore,
-  totalStudentsByClass,
+  calculateAverageScore = () => null,
+  totalStudentsByClass = {},
   isSimpleView = false,
 }: TaskColumnsOptions): ColumnDef<any>[] => {
   const columns: ColumnDef<any>[] = [

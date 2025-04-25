@@ -6,18 +6,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Class } from "@/types";
+import { ClassSelectorProps } from "@/types";
 import { saveSelectedClass } from "@/lib/classStorage";
-
-interface ClassSelectorProps {
-  classes: Class[];
-  selectedClass: string | null;
-  onSelectClass: (id: string) => void;
-  isLoading?: boolean;
-  width?: string;
-  placeholder?: string;
-  label?: string;
-}
 
 export const ClassSelector = ({
   classes,

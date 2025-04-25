@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/accordion";
 import { DataTable } from "../shared/DataTable";
 import { useTableConfig } from "@/hooks/useTableConfig";
-import { Student } from "@/types";
+import { Student, StudentSectionProps } from "@/types";
 import { Row } from "@tanstack/react-table";
 import {
   AlertDialog,
@@ -24,14 +24,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
 import { useState } from "react";
 import { StudentSelectionModal } from "./StudentSelectionModal";
-
-type StudentSectionProps = {
-  students: Student[];
-  isLoading: boolean;
-  onAddStudent: (studentIds: string[]) => void;
-  onDeleteStudent: (id: string) => void;
-  selectedClass: string | null;
-};
 
 export const StudentSection = ({
   students,
